@@ -26,6 +26,10 @@ db = SQLAlchemy(app)
 # Enable CORS for frontend requests
 CORS(app)
 
+# Auto-create tables on startup (works with Gunicorn too)
+with app.app_context():
+    db.create_all()
+
 # ==================== DATABASE MODELS ====================
 class Session(db.Model):
     """Stores each student tutoring session"""
