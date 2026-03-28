@@ -1,0 +1,3214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GIFT — Linear Equations Tutor · Grade 8</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── DESIGN TOKENS ─────────────────────────────────── */
+:root {
+  --ink:       #0f0e0c;
+  --paper:     #faf8f3;
+  --cream:     #f0ebdf;
+  --gold:      #c8902a;
+  --gold-lt:   #f5d68a;
+  --amber:     #e07b2a;
+  --teal:      #1a7a6e;
+  --teal-lt:   #d0f0ec;
+  --red:       #c0392b;
+  --red-lt:    #fdecea;
+  --green:     #1e7e44;
+  --green-lt:  #d6f5e0;
+  --muted:     #7a746a;
+  --border:    #ddd8cc;
+  --radius:    12px;
+  --shadow:    0 4px 24px rgba(15,14,12,.10);
+  --shadow-lg: 0 12px 48px rgba(15,14,12,.16);
+}
+
+/* ─── RESET ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── UTILITY ────────────────────────────────────────── */
+.hidden  { display: none !important; }
+.serif   { font-family: 'DM Serif Display', serif; }
+.mono    { font-family: 'DM Mono', monospace; }
+.muted   { color: var(--muted); }
+
+/* ─── SCREEN MANAGEMENT ──────────────────────────────── */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; }
+
+/* ══════════════════════════════════════════════════════
+   SCREEN 1 — LANDING / STUDENT ENTRY
+══════════════════════════════════════════════════════ */
+#screen-landing {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--ink);
+  color: var(--paper);
+  position: relative;
+  overflow: hidden;
+}
+#screen-landing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, #2a2318 0%, transparent 70%),
+              repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,.03) 40px),
+              repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,.03) 40px);
+  pointer-events: none;
+}
+.landing-inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 540px;
+  width: 100%;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  background: rgba(200,144,42,.18);
+  border: 1px solid rgba(200,144,42,.4);
+  color: var(--gold-lt);
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: .35rem .85rem;
+  border-radius: 999px;
+  margin-bottom: 1.5rem;
+}
+.landing-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  line-height: 1.1;
+  color: var(--paper);
+  margin-bottom: .75rem;
+}
+.landing-title em {
+  font-style: italic;
+  color: var(--gold-lt);
+}
+.landing-sub {
+  font-size: 1rem;
+  color: rgba(250,248,243,.6);
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+}
+.card-form {
+  background: rgba(250,248,243,.06);
+  border: 1px solid rgba(250,248,243,.12);
+  border-radius: var(--radius);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.field-label {
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(250,248,243,.5);
+  margin-bottom: .3rem;
+  display: block;
+}
+.field-input {
+  width: 100%;
+  background: rgba(250,248,243,.08);
+  border: 1px solid rgba(250,248,243,.16);
+  border-radius: 8px;
+  padding: .75rem 1rem;
+  color: var(--paper);
+  font-family: 'Outfit', sans-serif;
+  font-size: .95rem;
+  outline: none;
+  transition: border-color .2s;
+}
+.field-input:focus { border-color: var(--gold); }
+.btn-primary {
+  background: var(--gold);
+  color: var(--ink);
+  font-family: 'Outfit', sans-serif;
+  font-size: .95rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  padding: .85rem 2rem;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+  letter-spacing: .02em;
+}
+.btn-primary:hover { background: var(--amber); }
+.btn-primary:active { transform: scale(.98); }
+.chapter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+.pill {
+  background: rgba(250,248,243,.07);
+  border: 1px solid rgba(250,248,243,.14);
+  border-radius: 999px;
+  padding: .3rem .85rem;
+  font-size: .78rem;
+  color: rgba(250,248,243,.55);
+}
+
+/* ══════════════════════════════════════════════════════
+   SCREEN 2 — MAIN TUTOR
+══════════════════════════════════════════════════════ */
+#screen-tutor {
+  flex-direction: row;
+  align-items: stretch;
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────── */
+.sidebar {
+  width: 280px;
+  min-height: 100vh;
+  background: var(--ink);
+  color: var(--paper);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.sidebar-header {
+  padding: 1.5rem 1.25rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.sidebar-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.1rem;
+  color: var(--gold-lt);
+  letter-spacing: .04em;
+}
+.sidebar-logo span { font-style: italic; }
+.student-chip {
+  margin-top: .6rem;
+  font-size: .78rem;
+  color: rgba(255,255,255,.4);
+}
+.student-chip strong { color: rgba(255,255,255,.75); font-weight: 500; }
+
+/* BKT Mastery Panel */
+.mastery-panel {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.mastery-title {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  margin-bottom: .75rem;
+}
+.mastery-item {
+  margin-bottom: .55rem;
+}
+.mastery-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: .78rem;
+  margin-bottom: .25rem;
+  color: rgba(255,255,255,.65);
+}
+.mastery-row .pct { color: var(--gold-lt); font-family: 'DM Mono', monospace; font-size: .72rem; }
+.mastery-bar { height: 4px; background: rgba(255,255,255,.1); border-radius: 2px; overflow: hidden; }
+.mastery-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+
+/* Subtopic Nav */
+.subtopic-nav {
+  padding: .75rem .75rem;
+  flex: 1;
+}
+.subtopic-nav-title {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  padding: 0 .5rem;
+  margin-bottom: .5rem;
+}
+.subtopic-btn {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  width: 100%;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.5);
+  font-family: 'Outfit', sans-serif;
+  font-size: .82rem;
+  font-weight: 400;
+  text-align: left;
+  padding: .55rem .75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  position: relative;
+}
+.subtopic-btn:hover { background: rgba(255,255,255,.07); color: var(--paper); }
+.subtopic-btn.active { background: rgba(200,144,42,.18); color: var(--gold-lt); font-weight: 500; }
+.subtopic-btn.done { color: rgba(255,255,255,.35); }
+.subtopic-check {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,.2);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .6rem;
+}
+.subtopic-btn.done .subtopic-check { background: var(--teal); border-color: var(--teal); color: #fff; }
+.subtopic-btn.active .subtopic-check { border-color: var(--gold); }
+.diff-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--muted); margin-left: auto; flex-shrink: 0;
+}
+.diff-easy   { background: #2ecc71; }
+.diff-medium { background: var(--gold); }
+.diff-hard   { background: var(--red); }
+
+/* Session stats strip */
+.session-strip {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255,255,255,.08);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: .5rem;
+}
+.stat-cell { text-align: center; }
+.stat-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--gold-lt);
+}
+.stat-lbl {
+  font-size: .65rem;
+  color: rgba(255,255,255,.35);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+/* ── MAIN AREA ───────────────────────────────────────── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+/* Chapter header */
+.chapter-bar {
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.chapter-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+.chapter-title small {
+  display: block;
+  font-family: 'Outfit', sans-serif;
+  font-size: .75rem;
+  color: var(--muted);
+  font-weight: 400;
+  margin-top: .1rem;
+}
+.progress-wrap { flex: 1; max-width: 260px; }
+.progress-label {
+  font-size: .72rem;
+  color: var(--muted);
+  margin-bottom: .3rem;
+  display: flex; justify-content: space-between;
+}
+.progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+  border-radius: 3px;
+  transition: width .5s ease;
+}
+.btn-exit {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: .8rem;
+  padding: .4rem .85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-exit:hover { border-color: var(--red); color: var(--red); }
+
+/* Content area */
+.content-area {
+  flex: 1;
+  padding: 2rem;
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Subtopic intro card */
+.intro-card {
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--radius);
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.intro-card::after {
+  content: '';
+  position: absolute;
+  right: -20px; top: -20px;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,144,42,.25), transparent 70%);
+  pointer-events: none;
+}
+.intro-tag {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .5rem;
+}
+.intro-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.7rem;
+  color: var(--paper);
+  margin-bottom: .5rem;
+}
+.intro-meta {
+  font-size: .8rem;
+  color: rgba(255,255,255,.45);
+  display: flex; gap: 1.25rem;
+}
+.intro-meta span { display: flex; align-items: center; gap: .3rem; }
+
+/* Concept teach card */
+.teach-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow);
+  animation: slideIn .3s ease;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.teach-concept-tag {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: .5rem;
+}
+.teach-concept-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.35rem;
+  margin-bottom: .75rem;
+}
+.teach-explanation {
+  font-size: .92rem;
+  line-height: 1.65;
+  color: #2a2820;
+  margin-bottom: 1rem;
+}
+.example-block {
+  background: var(--teal-lt);
+  border-left: 3px solid var(--teal);
+  border-radius: 0 8px 8px 0;
+  padding: .75rem 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: .88rem;
+  color: var(--teal);
+  margin-bottom: 1.25rem;
+}
+.example-block strong { color: var(--ink); font-family: 'Outfit', sans-serif; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; display: block; margin-bottom: .3rem; }
+
+/* Question zone */
+.question-zone {
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+}
+.question-label {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: .5rem;
+}
+.question-text {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+/* Scaffolding steps */
+.scaffold-wrap {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.scaffold-title {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .65rem;
+}
+.scaffold-steps { display: flex; flex-direction: column; gap: .5rem; }
+.scaffold-step {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-size: .88rem;
+  font-family: 'DM Mono', monospace;
+}
+.scaffold-step .step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--ink); color: var(--paper);
+  font-size: .65rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.step-blank {
+  display: inline-block;
+  min-width: 40px;
+  border-bottom: 2px solid var(--gold);
+  color: var(--gold);
+  font-weight: 600;
+  text-align: center;
+  padding: 0 .25rem;
+}
+
+/* Answer input */
+.answer-row {
+  display: flex;
+  gap: .75rem;
+  align-items: stretch;
+}
+.answer-input {
+  flex: 1;
+  background: var(--cream);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: .75rem 1rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 1rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .2s;
+}
+.answer-input:focus { border-color: var(--gold); background: #fff; }
+.answer-input.correct { border-color: var(--green); background: var(--green-lt); }
+.answer-input.wrong   { border-color: var(--red);   background: var(--red-lt); }
+.btn-check {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'Outfit', sans-serif;
+  font-size: .9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 0 1.5rem;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+}
+.btn-check:hover { background: #2a2820; }
+.btn-check:active { transform: scale(.97); }
+.btn-check:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Feedback */
+.feedback-block {
+  margin-top: .85rem;
+  padding: .75rem 1rem;
+  border-radius: 8px;
+  font-size: .88rem;
+  line-height: 1.55;
+  animation: slideIn .25s ease;
+}
+.feedback-block.correct { background: var(--green-lt); color: var(--green); border: 1px solid #a8e6c0; }
+.feedback-block.wrong   { background: var(--red-lt);   color: var(--red);   border: 1px solid #f5c6c2; }
+.feedback-block strong { font-weight: 700; }
+
+/* Hint system */
+.hint-section { margin-top: .85rem; }
+.btn-hint {
+  background: transparent;
+  border: 1.5px dashed var(--border);
+  color: var(--muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: .82rem;
+  padding: .45rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex; align-items: center; gap: .4rem;
+}
+.btn-hint:hover { border-color: var(--gold); color: var(--gold); }
+.hint-box {
+  margin-top: .65rem;
+  background: #fff8e8;
+  border: 1px solid var(--gold-lt);
+  border-radius: 8px;
+  padding: .75rem 1rem;
+  font-size: .85rem;
+  color: #7a5a10;
+  line-height: 1.55;
+  animation: slideIn .2s ease;
+}
+.hint-tier {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .3rem;
+}
+
+/* Navigation buttons */
+.nav-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  gap: 1rem;
+}
+.btn-next {
+  background: var(--teal);
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: .9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: .75rem 1.75rem;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+  margin-left: auto;
+  display: flex; align-items: center; gap: .5rem;
+}
+.btn-next:hover { background: #155f56; }
+.btn-next:active { transform: scale(.97); }
+.btn-next:disabled { opacity: .35; cursor: not-allowed; }
+
+/* Remedial banner */
+.remedial-banner {
+  background: linear-gradient(135deg, #fff3cd, #fff8e8);
+  border: 1px solid var(--gold-lt);
+  border-left: 4px solid var(--amber);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  font-size: .88rem;
+  line-height: 1.55;
+  color: #5a4010;
+  animation: slideIn .3s ease;
+}
+.remedial-banner strong { color: var(--amber); }
+
+/* Mastery badge pop */
+.mastery-badge-pop {
+  display: none;
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(.8);
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--radius);
+  padding: 2rem 2.5rem;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+  opacity: 0;
+  max-width: 340px;
+}
+.mastery-badge-pop.show {
+  display: flex; flex-direction: column; align-items: center; gap: .75rem;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+.badge-icon { font-size: 3rem; }
+.badge-title { font-family: 'DM Serif Display', serif; font-size: 1.5rem; }
+.badge-sub { font-size: .85rem; color: rgba(255,255,255,.55); }
+.badge-score {
+  font-family: 'DM Mono', monospace;
+  font-size: 2rem;
+  color: var(--gold-lt);
+  font-weight: 500;
+}
+.overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 999;
+  backdrop-filter: blur(4px);
+}
+.overlay.show { display: block; }
+
+/* ══════════════════════════════════════════════════════
+   SCREEN 3 — SESSION COMPLETE / REPORT
+══════════════════════════════════════════════════════ */
+#screen-report {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2.5rem 1.5rem 4rem;
+  background: var(--paper);
+}
+.report-inner { max-width: 720px; width: 100%; }
+.report-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+.report-header .badge { margin-bottom: 1rem; }
+.report-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.4rem;
+  margin-bottom: .5rem;
+}
+.report-title em { font-style: italic; color: var(--gold); }
+.report-sub { color: var(--muted); font-size: .95rem; }
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.metric-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.metric-card .m-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 2rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+.metric-card .m-lbl {
+  font-size: .75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-top: .3rem;
+}
+.metric-card.highlight { background: var(--ink); border-color: var(--ink); }
+.metric-card.highlight .m-val { color: var(--gold-lt); }
+.metric-card.highlight .m-lbl { color: rgba(255,255,255,.4); }
+
+.subtopic-report {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.subtopic-report h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+.st-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: .65rem;
+}
+.st-name { font-size: .85rem; color: var(--ink); flex: 1; }
+.st-bar-wrap { flex: 2; height: 8px; background: var(--cream); border-radius: 4px; overflow: hidden; }
+.st-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+}
+.st-pct { font-family: 'DM Mono', monospace; font-size: .78rem; color: var(--muted); width: 36px; text-align: right; }
+
+.payload-section {
+  background: var(--ink);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.payload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.payload-header h3 {
+  font-family: 'DM Serif Display', serif;
+  color: var(--paper);
+  font-size: 1.1rem;
+}
+.btn-copy {
+  background: rgba(200,144,42,.2);
+  border: 1px solid rgba(200,144,42,.4);
+  color: var(--gold-lt);
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  padding: .35rem .75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-copy:hover { background: rgba(200,144,42,.35); }
+.payload-json {
+  font-family: 'DM Mono', monospace;
+  font-size: .75rem;
+  color: #a8d8c8;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.6;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.payload-json .key   { color: #f5d68a; }
+.payload-json .str   { color: #a8d8c8; }
+.payload-json .num   { color: #f0a070; }
+.payload-json .bool  { color: #d08ac0; }
+
+.btn-restart {
+  width: 100%;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: .9rem;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-restart:hover { background: #2a2820; }
+
+/* Validation warning */
+.validation-warn {
+  background: var(--red-lt);
+  border: 1px solid #f5c6c2;
+  border-radius: 8px;
+  padding: .75rem 1rem;
+  font-size: .82rem;
+  color: var(--red);
+  margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .sidebar { width: 220px; }
+  .content-area { padding: 1.25rem; }
+  .metrics-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  #screen-tutor { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: static; }
+  .session-strip { display: none; }
+}
+
+/* ══════════════════════════════════════════════════════
+   SCREEN 1.5 — PRE-ASSESSMENT / QUESTIONNAIRE
+══════════════════════════════════════════════════════ */
+#screen-assessment {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2.5rem 1.5rem 4rem;
+  background: var(--paper);
+  overflow-y: auto;
+}
+.assess-inner { max-width: 680px; width: 100%; }
+.assess-header { text-align: center; margin-bottom: 2.5rem; }
+.assess-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  margin-bottom: .5rem;
+}
+.assess-sub { color: var(--muted); font-size: .95rem; line-height: 1.6; }
+
+.level-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.level-card {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all .2s;
+  text-align: center;
+}
+.level-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: var(--shadow); }
+.level-card.selected { border-color: var(--teal); background: var(--teal-lt); }
+.level-emoji { font-size: 2.2rem; margin-bottom: .5rem; }
+.level-name { font-family: 'DM Serif Display', serif; font-size: 1.1rem; margin-bottom: .3rem; }
+.level-desc { font-size: .78rem; color: var(--muted); line-height: 1.5; }
+
+.assess-questions { margin-bottom: 2rem; }
+.assess-q-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+  animation: slideIn .3s ease;
+}
+.assess-q-num {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: .4rem;
+}
+.assess-q-text { font-size: 1rem; font-weight: 500; margin-bottom: .85rem; }
+.assess-options { display: flex; flex-direction: column; gap: .5rem; }
+.assess-opt {
+  background: var(--cream);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: .65rem 1rem;
+  cursor: pointer;
+  font-size: .9rem;
+  transition: all .18s;
+  text-align: left;
+  font-family: 'Outfit', sans-serif;
+}
+.assess-opt:hover { border-color: var(--gold); background: #fff; }
+.assess-opt.selected-opt { border-color: var(--teal); background: var(--teal-lt); color: var(--teal); font-weight: 500; }
+.assess-opt.correct-opt { border-color: var(--green); background: var(--green-lt); color: var(--green); }
+.assess-opt.wrong-opt   { border-color: var(--red);   background: var(--red-lt);   color: var(--red); }
+
+.assess-result-bar {
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--radius);
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+.assess-result-level {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.8rem;
+  color: var(--gold-lt);
+  margin-bottom: .3rem;
+}
+.assess-result-desc { font-size: .9rem; color: rgba(255,255,255,.6); }
+
+/* ══════════════════════════════════════════════════════
+   SCREEN 2.5 — REMEDIAL GAME OVERLAY
+══════════════════════════════════════════════════════ */
+#screen-remedial {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2rem 1.5rem 3rem;
+  background: var(--paper);
+  overflow-y: auto;
+}
+.remedial-inner { max-width: 720px; width: 100%; }
+.remedial-header { text-align: center; margin-bottom: 1.5rem; }
+.remedial-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.8rem;
+  margin-bottom: .4rem;
+}
+.remedial-sub { color: var(--muted); font-size: .9rem; margin-bottom: 1.5rem; }
+
+/* Game selector tabs */
+.game-tabs { display: flex; gap: .75rem; margin-bottom: 1.5rem; flex-wrap: wrap; justify-content: center; }
+.game-tab {
+  background: var(--cream);
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  padding: .45rem 1.2rem;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: 'Outfit', sans-serif;
+}
+.game-tab:hover { border-color: var(--gold); }
+.game-tab.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* Balance game canvas area */
+.game-container {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+  min-height: 360px;
+}
+#balanceCanvas { display: block; margin: 0 auto; border-radius: 8px; }
+
+/* Arcade number line */
+.number-line-wrap {
+  position: relative;
+  height: 80px;
+  background: var(--cream);
+  border-radius: 8px;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+.nl-track {
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  height: 4px;
+  background: var(--ink);
+  transform: translateY(-50%);
+}
+.nl-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--teal);
+  transition: left .4s cubic-bezier(.34,1.56,.64,1);
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.nl-tick {
+  position: absolute;
+  top: 50%;
+  transform: translateX(-50%) translateY(8px);
+  font-size: .65rem;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+}
+.nl-tick-line {
+  position: absolute;
+  top: 50%;
+  width: 1px;
+  height: 10px;
+  background: var(--muted);
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.game-controls {
+  display: flex; gap: .75rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem;
+}
+.btn-game {
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: .6rem 1.25rem;
+  font-family: 'Outfit', sans-serif;
+  font-size: .88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-game:hover { background: #155f56; }
+.btn-game.secondary { background: var(--cream); color: var(--ink); border: 1px solid var(--border); }
+.btn-game.secondary:hover { background: var(--border); }
+
+.game-score-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1rem;
+}
+.game-score { font-family: 'DM Mono', monospace; font-size: .95rem; color: var(--ink); }
+.game-streak { font-size: .82rem; color: var(--gold); font-weight: 600; }
+
+.game-feedback {
+  text-align: center;
+  min-height: 1.5rem;
+  font-size: .9rem;
+  font-weight: 500;
+  padding: .5rem;
+  border-radius: 6px;
+  transition: all .3s;
+}
+.game-feedback.ok  { background: var(--green-lt); color: var(--green); }
+.game-feedback.bad { background: var(--red-lt);   color: var(--red); }
+
+.remedial-exit-row { text-align: center; margin-top: .5rem; }
+</style>
+</head>
+<body>
+
+<!-- ══ OVERLAY ══════════════════════════════════════════ -->
+<div class="overlay" id="overlay"></div>
+
+<!-- ══ MASTERY POP ══════════════════════════════════════ -->
+<div class="mastery-badge-pop" id="masteryPop">
+  <div class="badge-icon" id="popIcon">🏆</div>
+  <div class="badge-title" id="popTitle">Subtopic Mastered!</div>
+  <div class="badge-score" id="popScore">92%</div>
+  <div class="badge-sub" id="popSub">Excellent work on this section.</div>
+  <button class="btn-primary" style="margin-top:.5rem;width:100%" onclick="closePop()">Continue →</button>
+</div>
+
+<!-- ══ SCREEN 1: LANDING ════════════════════════════════ -->
+<div class="screen active" id="screen-landing">
+  <div class="landing-inner">
+    <div class="badge">🎓 Team GIFT · Grade 8 Math</div>
+    <h1 class="landing-title">Master <em>Linear<br>Equations</em> in One Variable</h1>
+    <p class="landing-sub">An adaptive tutoring system that learns how you learn — adjusting hints, scaffolding, and difficulty in real time.</p>
+    <div class="card-form">
+      <div>
+        <label class="field-label">Your Name</label>
+        <input class="field-input" id="studentName" type="text" placeholder="e.g. Arjun Sharma" autocomplete="off">
+      </div>
+      <div>
+        <label class="field-label">Student ID</label>
+        <input class="field-input" id="studentId" type="text" placeholder="e.g. stu_456" autocomplete="off">
+      </div>
+      <button class="btn-primary" onclick="goToAssessment()">Next: Quick Assessment →</button>
+    </div>
+    <div class="chapter-pills">
+      <span class="pill">📐 Variables</span>
+      <span class="pill">⚖️ Balance Principle</span>
+      <span class="pill">🔢 Transposition</span>
+      <span class="pill">📝 Word Problems</span>
+      <span class="pill">🧠 BKT Tracking</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 1.5: PRE-ASSESSMENT ══════════════════════ -->
+<div class="screen" id="screen-assessment">
+  <div class="assess-inner">
+    <div class="assess-header">
+      <div class="badge">📋 Quick Assessment</div>
+      <h1 class="assess-title">How familiar are you with Linear Equations?</h1>
+      <p class="assess-sub">This short questionnaire helps us personalise your learning journey. There are no right or wrong answers for the first step — just be honest!</p>
+    </div>
+
+    <!-- Step 1: Self-report level -->
+    <div id="assessStep1">
+      <p style="font-weight:600;margin-bottom:1rem;">Step 1 of 2 — Rate your familiarity</p>
+      <div class="level-picker">
+        <div class="level-card" onclick="selectLevel('novice',this)">
+          <div class="level-emoji">🌱</div>
+          <div class="level-name">Haven't seen it</div>
+          <div class="level-desc">I've never studied linear equations before.</div>
+        </div>
+        <div class="level-card" onclick="selectLevel('beginner',this)">
+          <div class="level-emoji">📖</div>
+          <div class="level-name">Beginner</div>
+          <div class="level-desc">I've seen it briefly but can't solve equations yet.</div>
+        </div>
+        <div class="level-card" onclick="selectLevel('intermediate',this)">
+          <div class="level-emoji">🔧</div>
+          <div class="level-name">Intermediate</div>
+          <div class="level-desc">I can solve simple ones like 2x + 3 = 9.</div>
+        </div>
+        <div class="level-card" onclick="selectLevel('advanced',this)">
+          <div class="level-emoji">🚀</div>
+          <div class="level-name">Advanced</div>
+          <div class="level-desc">Comfortable with variables on both sides, word problems, fractions.</div>
+        </div>
+      </div>
+      <button class="btn-primary" id="toStep2Btn" onclick="goToAssessStep2()" disabled style="width:100%">Continue to Diagnostic Questions →</button>
+    </div>
+
+    <!-- Step 2: Diagnostic questions (rendered by JS) -->
+    <div id="assessStep2" class="hidden">
+      <p style="font-weight:600;margin-bottom:1rem;">Step 2 of 2 — Answer a few quick questions</p>
+      <div id="assessQContainer" class="assess-questions"></div>
+      <button class="btn-primary" id="submitAssessBtn" onclick="submitAssessment()" disabled style="width:100%">See My Learning Plan →</button>
+    </div>
+
+    <!-- Result (rendered by JS) -->
+    <div id="assessResult" class="hidden">
+      <div class="assess-result-bar" id="assessResultBar"></div>
+      <button class="btn-primary" style="width:100%" onclick="startSessionFromAssessment()">Start My Personalised Session →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 2: TUTOR ══════════════════════════════════ -->
+<div class="screen" id="screen-tutor">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">GIFT <span>Tutor</span></div>
+      <div class="student-chip">Student: <strong id="sidebarName">—</strong></div>
+      <div class="student-chip" id="student-level-badge" style="margin-top:.3rem;color:var(--gold-lt)"></div>
+    </div>
+
+    <div class="mastery-panel">
+      <div class="mastery-title">BKT Mastery</div>
+      <div id="masteryBars"><!-- filled by JS --></div>
+    </div>
+
+    <nav class="subtopic-nav">
+      <div class="subtopic-nav-title">Chapter Progress</div>
+      <div id="subtopicNav"><!-- filled by JS --></div>
+    </nav>
+
+    <div class="session-strip">
+      <div class="stat-cell">
+        <div class="stat-val" id="statCorrect">0</div>
+        <div class="stat-lbl">Correct</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val" id="statHints">0</div>
+        <div class="stat-lbl">Hints</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val" id="statTime">0m</div>
+        <div class="stat-lbl">Time</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="chapter-bar">
+      <div class="chapter-title">
+        Linear Equations in One Variable
+        <small id="currentSubtopicLabel">Loading…</small>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Overall Progress</span>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      </div>
+      <button class="btn-exit" onclick="confirmExit()">Exit Session</button>
+    </div>
+
+    <div class="content-area" id="contentArea">
+      <!-- dynamic content here -->
+    </div>
+  </main>
+</div>
+
+<!-- ══ SCREEN 2.5: REMEDIAL GAMES ════════════════════════ -->
+<div class="screen" id="screen-remedial">
+  <div class="remedial-inner">
+    <div class="remedial-header">
+      <div class="badge" style="background:rgba(224,123,42,.15);border-color:rgba(224,123,42,.4);color:var(--amber)">⚠️ Remedial Practice</div>
+      <h1 class="remedial-title">Let's build your foundations first!</h1>
+      <p class="remedial-sub" id="remedialSubText">You've been struggling with this concept. Let's try a visual game to make it click.</p>
+    </div>
+    <div class="game-tabs">
+      <button class="game-tab active" onclick="switchGame('balance',this)">⚖️ Balance Scale</button>
+      <button class="game-tab" onclick="switchGame('numberline',this)">📏 Number Line Jumps</button>
+      <button class="game-tab" onclick="switchGame('drag',this)">🧩 Drag &amp; Solve</button>
+    </div>
+
+    <!-- GAME 1: Balance Scale -->
+    <div class="game-container" id="game-balance">
+      <div class="game-score-row">
+        <span class="game-score">Score: <strong id="balScore">0</strong></span>
+        <span class="game-streak" id="balStreak"></span>
+        <span class="game-score">Round: <strong id="balRound">1</strong>/5</span>
+      </div>
+      <p style="text-align:center;font-size:.88rem;color:var(--muted);margin-bottom:.75rem" id="balInstructions">Keep the scale balanced by entering the correct value of x.</p>
+      <canvas id="balanceCanvas" width="560" height="240"></canvas>
+      <p style="text-align:center;margin-top:.75rem;font-size:1rem;font-weight:500" id="balEquation"></p>
+      <div class="game-controls">
+        <input class="answer-input" id="balInput" type="number" placeholder="x = ?" style="max-width:120px;text-align:center"
+          onkeydown="if(event.key==='Enter') checkBalanceAnswer()">
+        <button class="btn-game" onclick="checkBalanceAnswer()">✓ Check</button>
+        <button class="btn-game secondary" onclick="initBalanceGame()">↺ New Puzzle</button>
+      </div>
+      <div class="game-feedback" id="balFeedback"></div>
+    </div>
+
+    <!-- GAME 2: Number Line Jumps -->
+    <div class="game-container hidden" id="game-numberline">
+      <div class="game-score-row">
+        <span class="game-score">Score: <strong id="nlScore">0</strong></span>
+        <span class="game-streak" id="nlStreak"></span>
+        <span class="game-score">Round: <strong id="nlRound">1</strong>/5</span>
+      </div>
+      <p style="text-align:center;font-size:.88rem;color:var(--muted);margin-bottom:.5rem" id="nlQuestion"></p>
+      <div class="number-line-wrap" id="nlWrap">
+        <div class="nl-track"></div>
+        <div class="nl-marker" id="nlMarker" style="left:50%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:0 .5rem;font-size:.65rem;color:var(--muted);font-family:'DM Mono',monospace" id="nlLabels"></div>
+      <p style="text-align:center;font-size:.82rem;color:var(--muted);margin-top:.5rem">← Drag the marker or use the buttons below</p>
+      <div class="game-controls">
+        <button class="btn-game secondary" onclick="nlMove(-1)">← -1</button>
+        <button class="btn-game secondary" onclick="nlMove(-5)">← -5</button>
+        <button class="btn-game" onclick="submitNLAnswer()">✓ Place Here</button>
+        <button class="btn-game secondary" onclick="nlMove(5)">+5 →</button>
+        <button class="btn-game secondary" onclick="nlMove(1)">+1 →</button>
+      </div>
+      <div class="game-feedback" id="nlFeedback"></div>
+    </div>
+
+    <!-- GAME 3: Drag & Solve -->
+    <div class="game-container hidden" id="game-drag">
+      <div class="game-score-row">
+        <span class="game-score">Score: <strong id="dgScore">0</strong></span>
+        <span class="game-streak" id="dgStreak"></span>
+        <span class="game-score">Round: <strong id="dgRound">1</strong>/5</span>
+      </div>
+      <p style="text-align:center;font-size:.88rem;color:var(--muted);margin-bottom:.75rem">Drag each step to build the solution in the right order.</p>
+      <div id="dgEquationDisplay" style="text-align:center;font-size:1.1rem;font-weight:600;margin-bottom:1rem;font-family:'DM Mono',monospace"></div>
+      <div style="display:flex;gap:1rem;">
+        <div style="flex:1;">
+          <p style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem">Steps (drag from here)</p>
+          <div id="dgSource" style="min-height:80px;background:var(--cream);border-radius:8px;padding:.5rem;display:flex;flex-direction:column;gap:.4rem;border:1px solid var(--border)"></div>
+        </div>
+        <div style="flex:1;">
+          <p style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem">Your solution order</p>
+          <div id="dgTarget" style="min-height:80px;background:#fff8e8;border-radius:8px;padding:.5rem;display:flex;flex-direction:column;gap:.4rem;border:2px dashed var(--gold-lt)"></div>
+        </div>
+      </div>
+      <div class="game-controls" style="margin-top:1rem">
+        <button class="btn-game" onclick="checkDragAnswer()">✓ Check Order</button>
+        <button class="btn-game secondary" onclick="initDragGame()">↺ New Puzzle</button>
+      </div>
+      <div class="game-feedback" id="dgFeedback"></div>
+    </div>
+
+    <div class="remedial-exit-row">
+      <button class="btn-primary" id="remedialDoneBtn" onclick="returnFromRemedial()" style="min-width:220px">
+        ✅ I'm ready — Back to Main Topic →
+      </button>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:.6rem" id="remedialScoreMsg">Complete at least 3 correct answers to unlock this button.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 3: REPORT ════════════════════════════════ -->
+<div class="screen" id="screen-report">
+  <div class="report-inner">
+    <div class="report-header">
+      <div class="badge">✅ Session Complete</div>
+      <h1 class="report-title">Well done, <em id="reportName">Student</em>!</h1>
+      <p class="report-sub" id="reportSub">Here's your full performance summary for this chapter.</p>
+    </div>
+    <div class="metrics-grid" id="metricsGrid"></div>
+    <div class="subtopic-report">
+      <h3>Subtopic Breakdown</h3>
+      <div id="subtopicBreakdown"></div>
+    </div>
+    <div id="validationSection"></div>
+    <div class="payload-section">
+      <div class="payload-header">
+        <h3>📦 Session Payload (Merge API)</h3>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn-copy" onclick="copyPayload()">Copy JSON</button>
+          <button class="btn-copy" onclick="setAPIEndpoint()" title="Configure backend endpoint" style="font-size: 0.8rem;">⚙️ API</button>
+        </div>
+      </div>
+      <pre class="payload-json" id="payloadDisplay"></pre>
+      <button class="btn-primary" data-save-btn onclick="saveSessionToDatabase()" style="margin-top: 1.5rem; background: var(--teal); width: 100%; padding: 1rem; font-size: 1rem;">
+        💾 Save Session to Database
+      </button>
+    </div>
+    <button class="btn-restart" onclick="restartApp()">← Start New Session</button>
+  </div>
+</div>
+
+<script charset="utf-8">
+/* =======================================================
+   DOMAIN MODEL -- all 13 concepts across 5 subtopics
+======================================================= */
+const CHAPTER = {
+  chapter_id: "grade8_linear_equations_algebraic_expressions",
+  chapter_name: "Linear Equations in One Variable & Algebraic Expressions",
+  grade: 8,
+  expected_completion_time_sec: 5400,
+  prerequisites: ["grade7_basic_algebra"],
+  subtopics: [
+    {
+      subtopic_id: "s1_variables", name: "Variables and Expressions", difficulty: 0.2,
+      concepts: [
+        {
+          concept_id: "c1_01", name: "What is a Variable?",
+          explanation: "A variable is a symbol (usually a letter like x, y, or z) that represents an unknown or changing value.",
+          example: "If x = 3, then x + 5 = 8.",
+          question: "If x = 7, what is x + 2?",
+          correctAnswer: "9",
+          hint_l1: "Replace x with 7.",
+          hint_l2: "x + 2 = 7 + 2 = ?",
+          hint_l3: "7 + 2 = 9.",
+          scaffold: null
+        },
+        {
+          concept_id: "c1_02", name: "Substituting a Variable",
+          explanation: "Substitution means replacing the variable with its given value to evaluate the expression.",
+          example: "If y = 4, then 3y = 3 x 4 = 12.",
+          question: "If y = 5, what is 3y?",
+          correctAnswer: "15",
+          hint_l1: "Replace y with 5.",
+          hint_l2: "3y = 3 x 5 = ?",
+          hint_l3: "3 x 5 = 15.",
+          scaffold: null
+        },
+        {
+          concept_id: "c1_03", name: "Identifying Coefficients",
+          explanation: "A coefficient is the number multiplied by the variable. It tells us how many of that variable we have.",
+          example: "In 5x, the coefficient is 5. In 9y, the coefficient is 9.",
+          question: "What is the coefficient in 8x?",
+          correctAnswer: "8",
+          hint_l1: "The coefficient is the number right before the variable.",
+          hint_l2: "In 8x, which number multiplies x?",
+          hint_l3: "8 is the coefficient.",
+          scaffold: null
+        },
+        {
+          concept_id: "c1_04", name: "Coefficient of 1",
+          explanation: "If no number is written before a variable, the coefficient is 1. Writing x is the same as 1x.",
+          example: "x = 1x, so the coefficient of x is 1.",
+          question: "What is the coefficient of x in the expression x + 4?",
+          correctAnswer: "1",
+          hint_l1: "When no number appears before x, the coefficient is implied.",
+          hint_l2: "x is the same as 1x.",
+          hint_l3: "The coefficient is 1.",
+          scaffold: null
+        },
+        {
+          concept_id: "c1_05", name: "Constants in Expressions",
+          explanation: "A constant is a fixed number in an expression that does not change. It has no variable attached.",
+          example: "In 3x + 7, the constant is 7.",
+          question: "In the expression 5x + 12, what is the constant?",
+          correctAnswer: "12",
+          hint_l1: "A constant has no variable next to it.",
+          hint_l2: "Which number in 5x + 12 stands alone with no x?",
+          hint_l3: "12 is the constant.",
+          scaffold: null
+        },
+        {
+          concept_id: "c1_06", name: "Linear Expressions",
+          explanation: "A linear expression has the variable raised to the power of exactly 1. There are no squares or higher powers.",
+          example: "2x + 3 is linear. x squared + 3 is not linear.",
+          question: "Is 4x + 9 a linear expression? Answer yes or no.",
+          correctAnswer: "yes",
+          hint_l1: "Check the power of x.",
+          hint_l2: "In 4x, the power of x is 1 -- that makes it linear.",
+          hint_l3: "Power is 1, so yes, it is linear.",
+          scaffold: null
+        },
+        {
+          concept_id: "c1_07", name: "Non-linear Expressions",
+          explanation: "If a variable has a power of 2 or more, the expression is non-linear (quadratic, cubic, etc.).",
+          example: "x squared + 1 is non-linear because the power of x is 2.",
+          question: "Is x squared + 3 a linear expression? Answer yes or no.",
+          correctAnswer: "no",
+          hint_l1: "Look at the exponent of x.",
+          hint_l2: "x squared means the power is 2, not 1.",
+          hint_l3: "Power 2 means it is NOT linear. Answer: no.",
+          scaffold: null
+        },
+        {
+          concept_id: "c1_08", name: "Evaluating Two-variable Expressions",
+          explanation: "When an expression has two variables, substitute both values and simplify.",
+          example: "If x = 2 and y = 3, then x + y = 5.",
+          question: "If x = 4 and y = 6, what is x + y?",
+          correctAnswer: "10",
+          hint_l1: "Replace both x and y with their values.",
+          hint_l2: "x + y = 4 + 6 = ?",
+          hint_l3: "4 + 6 = 10.",
+          scaffold: null
+        },
+        {
+          concept_id: "c1_09", name: "Evaluating with Multiplication",
+          explanation: "Substitute the value and apply multiplication before addition (order of operations).",
+          example: "If x = 3, then 2x + 1 = 2 x 3 + 1 = 6 + 1 = 7.",
+          question: "If x = 4, what is 2x + 1?",
+          correctAnswer: "9",
+          hint_l1: "First multiply 2 by x, then add 1.",
+          hint_l2: "2 x 4 = 8, then 8 + 1 = ?",
+          hint_l3: "8 + 1 = 9.",
+          scaffold: null
+        },
+        {
+          concept_id: "c1_10", name: "Like and Unlike Terms",
+          explanation: "Like terms have the same variable and can be added or subtracted. Unlike terms cannot be combined directly.",
+          example: "3x + 5x = 8x (like terms). 3x + 5 cannot be simplified further (unlike terms).",
+          question: "Simplify: 4x + 3x. What do you get?",
+          correctAnswer: "7x",
+          hint_l1: "Both terms have the same variable x.",
+          hint_l2: "Add the coefficients: 4 + 3 = 7, keep x.",
+          hint_l3: "4x + 3x = 7x.",
+          scaffold: null
+        }
+      ]
+    },
+    {
+      subtopic_id: "s2_equations", name: "Algebraic Equations", difficulty: 0.3,
+      concepts: [
+        {
+          concept_id: "c2_01", name: "What is an Equation?",
+          explanation: "An equation is a mathematical statement that says two expressions are equal, using the = sign.",
+          example: "2x + 3 = 7 is an equation. Both sides must balance.",
+          question: "Is 3x + 5 = 11 an equation? Answer yes or no.",
+          correctAnswer: "yes",
+          hint_l1: "An equation always has an = sign.",
+          hint_l2: "Does 3x + 5 = 11 have an = sign?",
+          hint_l3: "Yes, it has an = sign, so it is an equation.",
+          scaffold: null
+        },
+        {
+          concept_id: "c2_02", name: "LHS and RHS",
+          explanation: "Every equation has a Left-Hand Side (LHS) and a Right-Hand Side (RHS) separated by the = sign.",
+          example: "In 2x + 3 = 7: LHS is 2x + 3, RHS is 7.",
+          question: "What is the RHS of 5x = 10?",
+          correctAnswer: "10",
+          hint_l1: "RHS is everything to the right of =.",
+          hint_l2: "In 5x = 10, what is on the right?",
+          hint_l3: "RHS = 10.",
+          scaffold: null
+        },
+        {
+          concept_id: "c2_03", name: "Identifying LHS",
+          explanation: "The LHS of an equation is all terms to the left of the equals sign.",
+          example: "In 3x - 1 = 8, the LHS is 3x - 1.",
+          question: "What is the LHS of 4x + 2 = 14? (Type without spaces)",
+          correctAnswer: "4x+2",
+          hint_l1: "LHS is everything to the left of =.",
+          hint_l2: "In 4x + 2 = 14, what is on the left?",
+          hint_l3: "LHS = 4x + 2. Type: 4x+2",
+          scaffold: null
+        },
+        {
+          concept_id: "c2_04", name: "Solution of an Equation",
+          explanation: "The solution is the value of the variable that makes LHS equal to RHS. Verify by substituting back.",
+          example: "For 2x = 10: x = 5. Check: 2 x 5 = 10. Correct!",
+          question: "Solve x + 2 = 6. What is x?",
+          correctAnswer: "4",
+          hint_l1: "Isolate x by removing the 2.",
+          hint_l2: "Subtract 2 from both sides: x = 6 - 2.",
+          hint_l3: "x = 4.",
+          scaffold: ["x + 2 = 6", "x = 6 - __", "x = __"]
+        },
+        {
+          concept_id: "c2_05", name: "Verifying a Solution",
+          explanation: "After solving, always substitute your answer back to verify both sides are equal.",
+          example: "x = 3 in x + 5 = 8? LHS = 3 + 5 = 8 = RHS. Verified!",
+          question: "Is x = 2 the solution to x + 3 = 5? Answer yes or no.",
+          correctAnswer: "yes",
+          hint_l1: "Substitute x = 2 into the equation.",
+          hint_l2: "LHS = 2 + 3 = 5. Does that equal RHS?",
+          hint_l3: "5 = 5, so yes, x = 2 is correct.",
+          scaffold: null
+        },
+        {
+          concept_id: "c2_06", name: "Balance Principle",
+          explanation: "An equation works like a balance scale. Any operation done on one side must be done on the other side too.",
+          example: "x + 3 = 7 -- subtract 3 from both sides: x = 4.",
+          question: "If x + 5 = 9, what number must you subtract from both sides?",
+          correctAnswer: "5",
+          hint_l1: "To isolate x, remove the +5.",
+          hint_l2: "Subtract the constant that is being added to x.",
+          hint_l3: "Subtract 5 from both sides. Answer: 5.",
+          scaffold: null
+        },
+        {
+          concept_id: "c2_07", name: "Applying Balance -- Subtraction Reversal",
+          explanation: "If a number is subtracted on the LHS, add it to both sides to isolate the variable.",
+          example: "x - 4 = 6 -- add 4 to both sides: x = 10.",
+          question: "Solve x - 3 = 7. What is x?",
+          correctAnswer: "10",
+          hint_l1: "The 3 is being subtracted -- reverse that.",
+          hint_l2: "Add 3 to both sides: x = 7 + 3.",
+          hint_l3: "x = 10.",
+          scaffold: ["x - 3 = 7", "x = 7 + __", "x = __"]
+        },
+        {
+          concept_id: "c2_08", name: "Applying Balance -- Division Reversal",
+          explanation: "If the variable is divided by a number, multiply both sides by that number.",
+          example: "x / 3 = 4 -- multiply both sides by 3: x = 12.",
+          question: "Solve x / 2 = 6. What is x?",
+          correctAnswer: "12",
+          hint_l1: "x is being divided by 2 -- reverse that operation.",
+          hint_l2: "Multiply both sides by 2: x = 6 x 2.",
+          hint_l3: "x = 12.",
+          scaffold: null
+        },
+        {
+          concept_id: "c2_09", name: "Forming Equations from Statements",
+          explanation: "Word statements can be converted into equations by identifying the unknown and the relationship given.",
+          example: "A number increased by 5 is 11. Let the number be x: x + 5 = 11.",
+          question: "A number decreased by 4 equals 9. Write the equation (no spaces, use x).",
+          correctAnswer: "x-4=9",
+          hint_l1: "Let the unknown number be x.",
+          hint_l2: "Decreased by 4 means subtract 4. Equals 9 means = 9.",
+          hint_l3: "The equation is x - 4 = 9. Type: x-4=9",
+          scaffold: null
+        }
+      ]
+    },
+    {
+      subtopic_id: "s3_solving", name: "Solving Linear Equations", difficulty: 0.5,
+      concepts: [
+        {
+          concept_id: "c3_01", name: "Solving ax = c",
+          explanation: "When the variable is multiplied by a coefficient, divide both sides by that coefficient.",
+          example: "5x = 20 -- divide both sides by 5: x = 4.",
+          question: "Solve 3x = 12. What is x?",
+          correctAnswer: "4",
+          hint_l1: "Divide both sides by the coefficient of x.",
+          hint_l2: "3x = 12 -- divide by 3: x = 12 / 3.",
+          hint_l3: "x = 4.",
+          scaffold: ["3x = 12", "x = 12 / __", "x = __"]
+        },
+        {
+          concept_id: "c3_02", name: "Solving ax + b = c",
+          explanation: "First subtract the constant b from both sides, then divide by the coefficient a.",
+          example: "3x + 2 = 11 -- 3x = 9 -- x = 3.",
+          question: "Solve 2x + 4 = 10. What is x?",
+          correctAnswer: "3",
+          hint_l1: "First remove the +4 by subtracting 4 from both sides.",
+          hint_l2: "2x = 10 - 4 = 6. Now divide by 2.",
+          hint_l3: "x = 3.",
+          scaffold: ["2x + 4 = 10", "2x = 10 - 4 = __", "x = __ / 2 = __"]
+        },
+        {
+          concept_id: "c3_03", name: "Solving ax - b = c",
+          explanation: "First add b to both sides to eliminate the constant, then divide by a.",
+          example: "4x - 3 = 9 -- 4x = 12 -- x = 3.",
+          question: "Solve 3x - 6 = 9. What is x?",
+          correctAnswer: "5",
+          hint_l1: "Add 6 to both sides first.",
+          hint_l2: "3x = 9 + 6 = 15. Now divide by 3.",
+          hint_l3: "x = 5.",
+          scaffold: ["3x - 6 = 9", "3x = 9 + 6 = __", "x = __ / 3 = __"]
+        },
+        {
+          concept_id: "c3_04", name: "Transposition -- Positive Terms",
+          explanation: "Transposing means moving a term across the = sign, and changing its sign (+ becomes -, - becomes +).",
+          example: "x + 5 = 10 -- x = 10 - 5 = 5.",
+          question: "Solve x + 7 = 12. What is x?",
+          correctAnswer: "5",
+          hint_l1: "Transpose 7 to the right side.",
+          hint_l2: "x = 12 - 7.",
+          hint_l3: "x = 5.",
+          scaffold: ["x + 7 = 12", "x = 12 - __", "x = __"]
+        },
+        {
+          concept_id: "c3_05", name: "Transposition -- Negative Terms",
+          explanation: "If a term is negative on the LHS, it becomes positive when transposed to the RHS.",
+          example: "x - 9 = 3 -- x = 3 + 9 = 12.",
+          question: "Solve x - 8 = 5. What is x?",
+          correctAnswer: "13",
+          hint_l1: "Transpose -8 to the right side.",
+          hint_l2: "x = 5 + 8.",
+          hint_l3: "x = 13.",
+          scaffold: ["x - 8 = 5", "x = 5 + __", "x = __"]
+        },
+        {
+          concept_id: "c3_06", name: "Rational Solutions",
+          explanation: "Solutions can be fractions when the division does not give a whole number. Express as p/q.",
+          example: "3x = 5 -- x = 5/3.",
+          question: "Solve 4x = 7. What is x? (write as a fraction e.g. 7/4)",
+          correctAnswer: "7/4",
+          hint_l1: "Divide both sides by 4.",
+          hint_l2: "x = 7 / 4. Write it as a fraction.",
+          hint_l3: "x = 7/4.",
+          scaffold: null
+        },
+        {
+          concept_id: "c3_07", name: "Equations with Brackets",
+          explanation: "First expand the brackets using the distributive law, then solve as usual.",
+          example: "2(x + 3) = 10 -- 2x + 6 = 10 -- 2x = 4 -- x = 2.",
+          question: "Solve 3(x + 2) = 15. What is x?",
+          correctAnswer: "3",
+          hint_l1: "First expand: 3(x + 2) = 3x + 6.",
+          hint_l2: "3x + 6 = 15 -- 3x = 9.",
+          hint_l3: "x = 3.",
+          scaffold: ["3(x + 2) = 15", "3x + 6 = 15", "3x = 15 - 6 = __", "x = __ / 3 = __"]
+        },
+        {
+          concept_id: "c3_08", name: "Equations with Fractions (basic)",
+          explanation: "If x is divided by a number, multiply both sides by that number to clear the fraction.",
+          example: "x / 4 = 3 -- multiply both sides by 4: x = 12.",
+          question: "Solve x / 5 = 4. What is x?",
+          correctAnswer: "20",
+          hint_l1: "Multiply both sides by 5.",
+          hint_l2: "x = 4 x 5.",
+          hint_l3: "x = 20.",
+          scaffold: null
+        },
+        {
+          concept_id: "c3_09", name: "Multi-step: Two Operations",
+          explanation: "Some equations need two steps: first add or subtract, then multiply or divide.",
+          example: "x/2 + 3 = 7 -- x/2 = 4 -- x = 8.",
+          question: "Solve x/3 + 2 = 5. What is x?",
+          correctAnswer: "9",
+          hint_l1: "First subtract 2 from both sides.",
+          hint_l2: "x/3 = 3. Now multiply both sides by 3.",
+          hint_l3: "x = 9.",
+          scaffold: ["x/3 + 2 = 5", "x/3 = 5 - 2 = __", "x = __ x 3 = __"]
+        },
+        {
+          concept_id: "c3_10", name: "Checking Your Solution",
+          explanation: "Always verify by substituting back. Both sides must be equal for the solution to be correct.",
+          example: "If x = 4 for 2x + 1 = 9: LHS = 2(4) + 1 = 9. Correct!",
+          question: "Is x = 5 correct for 3x - 2 = 13? Answer yes or no.",
+          correctAnswer: "yes",
+          hint_l1: "Substitute x = 5 into the LHS.",
+          hint_l2: "3(5) - 2 = 15 - 2 = 13. Does that equal RHS?",
+          hint_l3: "13 = 13. Yes, x = 5 is correct.",
+          scaffold: null
+        }
+      ]
+    },
+    {
+      subtopic_id: "s4_word_problems", name: "Applications and Word Problems", difficulty: 0.7,
+      concepts: [
+        {
+          concept_id: "c4_01", name: "Translating Sentences to Equations",
+          explanation: "Read the problem carefully. Assign x to the unknown. Convert the relationship into an equation.",
+          example: "A number plus 6 equals 15. x + 6 = 15. Solve: x = 9.",
+          question: "A number plus 8 equals 20. Find the number.",
+          correctAnswer: "12",
+          hint_l1: "Let the number be x. Write the equation.",
+          hint_l2: "x + 8 = 20 -- x = 20 - 8.",
+          hint_l3: "x = 12.",
+          scaffold: ["Let number = x", "x + 8 = 20", "x = 20 - __ = __"]
+        },
+        {
+          concept_id: "c4_02", name: "Number Problems -- Sum",
+          explanation: "When two numbers add to a total, let one be x and the other be expressed in terms of x.",
+          example: "Two numbers add to 30 and one is 10 more than the other. x + (x+10) = 30 -- x = 10.",
+          question: "Find x if x + (x + 5) = 25.",
+          correctAnswer: "10",
+          hint_l1: "Combine like terms on the left.",
+          hint_l2: "2x + 5 = 25 -- 2x = 20.",
+          hint_l3: "x = 10.",
+          scaffold: ["x + (x + 5) = 25", "2x + 5 = 25", "2x = 25 - 5 = __", "x = __ / 2 = __"]
+        },
+        {
+          concept_id: "c4_03", name: "Number Problems -- Multiples",
+          explanation: "When one number is a multiple of another, express the larger as a multiple of x.",
+          example: "One number is 3 times another. Together they make 40. x + 3x = 40 -- x = 10.",
+          question: "One number is twice another. Together they make 18. Find the smaller number.",
+          correctAnswer: "6",
+          hint_l1: "Let smaller number = x. Larger = 2x.",
+          hint_l2: "x + 2x = 18 -- 3x = 18.",
+          hint_l3: "x = 6.",
+          scaffold: ["x + 2x = 18", "3x = 18", "x = 18 / 3 = __"]
+        },
+        {
+          concept_id: "c4_04", name: "Consecutive Number Problems",
+          explanation: "Consecutive integers differ by 1. If the first is x, the next is x+1, then x+2, and so on.",
+          example: "Two consecutive numbers sum to 25: x + (x+1) = 25 -- x = 12.",
+          question: "Two consecutive numbers sum to 31. What is the smaller number?",
+          correctAnswer: "15",
+          hint_l1: "Let the smaller number be x, the next is x + 1.",
+          hint_l2: "x + (x+1) = 31 -- 2x + 1 = 31 -- 2x = 30.",
+          hint_l3: "x = 15.",
+          scaffold: ["x + (x+1) = 31", "2x + 1 = 31", "2x = 30", "x = __"]
+        },
+        {
+          concept_id: "c4_05", name: "Age Problems -- Basic",
+          explanation: "Assign a variable to one age and express the other using the given relationship.",
+          example: "Father is 3 times the son. Together 40. 3x + x = 40 -- x = 10.",
+          question: "Father is 3 times the son. Their total age is 32. Find the son's age.",
+          correctAnswer: "8",
+          hint_l1: "Let son = x, father = 3x.",
+          hint_l2: "x + 3x = 32 -- 4x = 32.",
+          hint_l3: "x = 8.",
+          scaffold: ["3x + x = 32", "4x = 32", "x = 32 / 4 = __"]
+        },
+        {
+          concept_id: "c4_06", name: "Age Problems -- Future Age",
+          explanation: "Future age = current age + number of years. Set up the equation using the future relationship.",
+          example: "Riya is 10 now. In x years she will be 15. 10 + x = 15 -- x = 5.",
+          question: "Aman is 12 now. In how many years will he be 20?",
+          correctAnswer: "8",
+          hint_l1: "Let the number of years be x.",
+          hint_l2: "12 + x = 20.",
+          hint_l3: "x = 20 - 12 = 8.",
+          scaffold: ["12 + x = 20", "x = 20 - 12 = __"]
+        },
+        {
+          concept_id: "c4_07", name: "Perimeter Problems",
+          explanation: "Perimeter of a rectangle = 2(length + width). Set up the equation and solve for the unknown.",
+          example: "2(l + 4) = 20 -- l + 4 = 10 -- l = 6.",
+          question: "If 2(l + 3) = 18, find l.",
+          correctAnswer: "6",
+          hint_l1: "Divide both sides by 2 first.",
+          hint_l2: "l + 3 = 9.",
+          hint_l3: "l = 9 - 3 = 6.",
+          scaffold: ["2(l + 3) = 18", "l + 3 = 18 / 2 = __", "l = __ - 3 = __"]
+        },
+        {
+          concept_id: "c4_08", name: "Money Problems",
+          explanation: "Set up an equation based on the total cost or income. Use a variable for the unknown quantity.",
+          example: "5 pens cost Rs. 60. Cost of 1 pen = 60/5 = Rs. 12.",
+          question: "4 books cost Rs. 60 more than 1 book, and total cost is Rs. 80. What is the cost of 1 book?",
+          correctAnswer: "20",
+          hint_l1: "Let cost of 1 book = x. Then 4 books = 4x.",
+          hint_l2: "4x = x + 60 -- 3x = 60.",
+          hint_l3: "x = 20.",
+          scaffold: ["4x = x + 60", "4x - x = 60", "3x = 60", "x = 60 / 3 = __"]
+        },
+        {
+          concept_id: "c4_09", name: "Speed-Distance Problems",
+          explanation: "Distance = Speed x Time. If one quantity is unknown, assign x and solve.",
+          example: "A car travels at x km/h for 3 hours covering 120 km. 3x = 120 -- x = 40.",
+          question: "A car travels at x km/h for 4 hours and covers 100 km. What is x?",
+          correctAnswer: "25",
+          hint_l1: "Distance = Speed x Time. Write the equation.",
+          hint_l2: "4x = 100.",
+          hint_l3: "x = 100 / 4 = 25.",
+          scaffold: ["4x = 100", "x = 100 / 4 = __"]
+        }
+      ]
+    },
+    {
+      subtopic_id: "s5_advanced", name: "Variables on Both Sides", difficulty: 0.8,
+      concepts: [
+        {
+          concept_id: "c5_01", name: "Collecting Variable Terms",
+          explanation: "When variables appear on both sides, collect them on one side by adding or subtracting the variable term.",
+          example: "2x - 3 = x + 2 -- 2x - x = 2 + 3 -- x = 5.",
+          question: "Solve 3x = x + 6. What is x?",
+          correctAnswer: "3",
+          hint_l1: "Subtract x from both sides.",
+          hint_l2: "3x - x = 6 -- 2x = 6.",
+          hint_l3: "x = 3.",
+          scaffold: ["3x = x + 6", "3x - x = 6", "2x = 6", "x = 6 / 2 = __"]
+        },
+        {
+          concept_id: "c5_02", name: "Variables Both Sides -- Larger Coefficient Left",
+          explanation: "Move the smaller variable term to the side with the larger coefficient to avoid negatives.",
+          example: "5x + 2 = 3x + 10 -- 5x - 3x = 10 - 2 -- 2x = 8 -- x = 4.",
+          question: "Solve 5x + 2 = 3x + 10. What is x?",
+          correctAnswer: "4",
+          hint_l1: "Move 3x to the left and 2 to the right.",
+          hint_l2: "5x - 3x = 10 - 2 -- 2x = 8.",
+          hint_l3: "x = 4.",
+          scaffold: ["5x + 2 = 3x + 10", "5x - 3x = 10 - 2", "2x = __", "x = __"]
+        },
+        {
+          concept_id: "c5_03", name: "Variables Both Sides -- With Negatives",
+          explanation: "Be careful with signs. When you move a negative term, it becomes positive on the other side.",
+          example: "7x - 4 = 4x + 8 -- 7x - 4x = 8 + 4 -- 3x = 12 -- x = 4.",
+          question: "Solve 6x - 3 = 4x + 7. What is x?",
+          correctAnswer: "5",
+          hint_l1: "Move 4x to the left and -3 to the right.",
+          hint_l2: "6x - 4x = 7 + 3 -- 2x = 10.",
+          hint_l3: "x = 5.",
+          scaffold: ["6x - 3 = 4x + 7", "6x - 4x = 7 + 3", "2x = __", "x = __"]
+        },
+        {
+          concept_id: "c5_04", name: "Equations with Brackets on Both Sides",
+          explanation: "First expand all brackets, then collect like terms on each side, then solve.",
+          example: "2(x + 3) = x + 8 -- 2x + 6 = x + 8 -- x = 2.",
+          question: "Solve 2(x + 1) = x + 5. What is x?",
+          correctAnswer: "3",
+          hint_l1: "Expand the bracket on the left first.",
+          hint_l2: "2x + 2 = x + 5 -- 2x - x = 5 - 2.",
+          hint_l3: "x = 3.",
+          scaffold: ["2(x + 1) = x + 5", "2x + 2 = x + 5", "2x - x = 5 - 2", "x = __"]
+        },
+        {
+          concept_id: "c5_05", name: "Cross-multiplication",
+          explanation: "When an equation has fractions in the form a/b = c/d, cross-multiply: a x d = b x c.",
+          example: "x/3 = 4/6 -- 6x = 12 -- x = 2.",
+          question: "Solve x/2 = 6/4. What is x?",
+          correctAnswer: "3",
+          hint_l1: "Cross multiply: x x 4 = 2 x 6.",
+          hint_l2: "4x = 12.",
+          hint_l3: "x = 3.",
+          scaffold: ["x/2 = 6/4", "4x = 2 x 6 = 12", "x = 12 / 4 = __"]
+        },
+        {
+          concept_id: "c5_06", name: "Equations Reducing to Linear Form",
+          explanation: "Some equations look complex but simplify to a linear equation after expanding or cross-multiplying.",
+          example: "(x+1)/(x-1) = 3/1 -- x+1 = 3(x-1) -- x = 2.",
+          question: "If 2(x + 3) = 3(x - 1), what is x?",
+          correctAnswer: "9",
+          hint_l1: "Expand both sides.",
+          hint_l2: "2x + 6 = 3x - 3 -- 6 + 3 = 3x - 2x.",
+          hint_l3: "9 = x.",
+          scaffold: ["2(x + 3) = 3(x - 1)", "2x + 6 = 3x - 3", "6 + 3 = 3x - 2x", "x = __"]
+        },
+        {
+          concept_id: "c5_07", name: "Word Problem -- Variables Both Sides",
+          explanation: "Set up the equation from context. Both sides will naturally contain the variable.",
+          example: "Mohan has 3 times as many marbles as Sohan. If Mohan gives 10 away they are equal. 3x - 10 = x -- x = 5.",
+          question: "Ravi has 5x rupees and Meena has 2x + 30 rupees. They have equal money. What is x?",
+          correctAnswer: "10",
+          hint_l1: "Set both expressions equal to each other.",
+          hint_l2: "5x = 2x + 30 -- 3x = 30.",
+          hint_l3: "x = 10.",
+          scaffold: ["5x = 2x + 30", "5x - 2x = 30", "3x = 30", "x = __"]
+        },
+        {
+          concept_id: "c5_08", name: "Infinite Solutions",
+          explanation: "If variables cancel and you get a true statement (e.g. 4 = 4), there are infinite solutions -- every value of x works.",
+          example: "x + 2 = x + 2 -- subtract x: 2 = 2 (always true) -- infinite solutions.",
+          question: "Solve x + 4 = x + 4. How many solutions? Type: infinite",
+          correctAnswer: "infinite",
+          hint_l1: "Subtract x from both sides.",
+          hint_l2: "You get 4 = 4 -- a statement that is always true.",
+          hint_l3: "Every value of x satisfies this. Type: infinite",
+          scaffold: ["x + 4 = x + 4", "x - x + 4 = 4", "4 = 4 (always true) -- __"]
+        }
+      ]
+    }
+  ]
+};
+
+/* =======================================================
+   BKT -- Bayesian Knowledge Tracking
+   Parameters per concept: P(L0), P(T), P(S), P(G)
+   P(L|correct), P(L|wrong), update mastery each response
+======================================================= */
+const BKT_PARAMS = {
+  P_L0: 0.3,   // prior probability of knowing
+  P_T:  0.2,   // probability of learning from attempt
+  P_S:  0.1,   // slip probability (know but wrong)
+  P_G:  0.2    // guess probability (don't know but correct)
+};
+
+function bktUpdate(pL, correct) {
+  const { P_S, P_G, P_T } = BKT_PARAMS;
+  let pLgivenObs;
+  if (correct) {
+    const numerator   = pL * (1 - P_S);
+    const denominator = pL * (1 - P_S) + (1 - pL) * P_G;
+    pLgivenObs = numerator / denominator;
+  } else {
+    const numerator   = pL * P_S;
+    const denominator = pL * P_S + (1 - pL) * (1 - P_G);
+    pLgivenObs = numerator / denominator;
+  }
+  // Apply learning transition
+  return pLgivenObs + (1 - pLgivenObs) * P_T;
+}
+
+/* =======================================================
+   ITS MASTERY FORMULA (hybrid with BKT)
+   Mastery = w1*Acc + w2*Savg + w3*Conf - w4*Hp - w5*E
+   w1=0.35 (accuracy), w2=0.30 (skill/BKT), w3=0.15 (confidence),
+   w4=0.10 (hint penalty), w5=0.10 (error penalty)
+   Conf  = 1 - (hints_used / max_hints_possible) for concept
+   Hp    = hints_used_ratio for concept
+   E     = wrong_ratio for concept
+   Savg  = BKT P(L) -- bayesian skill estimate
+======================================================= */
+const ITS_W = { w1: 0.35, w2: 0.30, w3: 0.15, w4: 0.10, w5: 0.10 };
+
+function conceptITSMastery(concept_id) {
+  const data = STATE.conceptAttempts[concept_id] || { attempts: 0, correct: 0, wrong: 0 };
+  // Use live BKT value; fall back to current level prior (not hard-coded 0.3)
+  const levelPrior = LEVEL_BKT_PRIORS[STATE.studentLevel] || BKT_PARAMS.P_L0;
+  const pL   = STATE.bkt[concept_id] !== undefined ? STATE.bkt[concept_id] : levelPrior;
+
+  // For unattempted concepts, return just the BKT prior — no Conf/Hp/Acc effects yet
+  if (data.attempts === 0) return pL;
+
+  const hintsForConcept = (STATE.hintsByConceptId && STATE.hintsByConceptId[concept_id]) || 0;
+  const maxHints = 3;
+
+  const Acc  = data.correct / data.attempts;
+  const Savg = pL;
+  const Conf = 1 - Math.min(hintsForConcept / maxHints, 1);
+  const Hp   = Math.min(hintsForConcept / maxHints, 1);
+  const E    = data.wrong / data.attempts;
+
+  const { w1, w2, w3, w4, w5 } = ITS_W;
+  const score = w1*Acc + w2*Savg + w3*Conf - w4*Hp - w5*E;
+  return Math.max(0, Math.min(1, score));
+}
+
+function subtopicMastery(subtopic_id) {
+  const concepts = CHAPTER.subtopics.find(s => s.subtopic_id === subtopic_id)?.concepts || [];
+  if (!concepts.length) return 0;
+  const avg = concepts.reduce((sum, c) => sum + conceptITSMastery(c.concept_id), 0) / concepts.length;
+  return avg;
+}
+
+/* =======================================================
+   SESSION STATE
+======================================================= */
+let STATE = {
+  studentName: '',
+  studentId: '',
+  sessionId: '',
+  startTime: null,
+  studentLevel: 'beginner',
+  currentSubtopicIdx: 0,
+  currentConceptIdx: 0,
+  hintsUsed: 0,
+  hintsOpenForCurrent: 0,
+  correctAnswers: 0,
+  wrongAnswers: 0,
+  questionsAttempted: new Set(),
+  retryCount: 0,
+  subtopicProgress: {},
+  bkt: {},           // concept_id -> P(L)
+  conceptAttempts: {},// concept_id -> {attempts, correct, wrong}
+  hintsByConceptId: {},// concept_id -> hints used count
+  answeredCurrent: false,
+  remedialActive: false,
+  timerInterval: null,
+  elapsedSec: 0,
+  sessionStatus: 'completed'
+};
+
+function initBKT(level) {
+  const prior = LEVEL_BKT_PRIORS[level] || BKT_PARAMS.P_L0;
+  CHAPTER.subtopics.forEach(st => {
+    st.concepts.forEach(c => {
+      STATE.bkt[c.concept_id] = prior;
+      STATE.conceptAttempts[c.concept_id] = { attempts: 0, correct: 0, wrong: 0 };
+      STATE.hintsByConceptId[c.concept_id] = 0;
+    });
+    STATE.subtopicProgress[st.subtopic_id] = 0;
+  });
+}
+
+/* =======================================================
+   HINT TIER LOGIC -- driven by learner model
+======================================================= */
+function getHintTier(concept_id) {
+  const data = STATE.conceptAttempts[concept_id];
+  const pL   = STATE.bkt[concept_id];
+  // Heavy struggling: 3+ wrong -> conceptual hint (tier 3)
+  if (data.wrong >= 3) return 3;
+  // Moderate struggle: 2 wrong or low mastery -> tier 2
+  if (data.wrong >= 2 || pL < 0.35) return 2;
+  // Light nudge: tier 1
+  return 1;
+}
+
+function getHintText(concept, tier) {
+  if (tier === 1) return { label: 'Nudge', text: concept.hint_l1 };
+  if (tier === 2) return { label: 'Step Hint', text: concept.hint_l2 };
+  return { label: 'Conceptual Help', text: concept.hint_l3 };
+}
+
+/* =======================================================
+   SCAFFOLDING -- partially faded based on mastery
+   High mastery (pL > 0.65) -> fewer steps shown
+   Low mastery -> show all scaffold steps
+======================================================= */
+function shouldShowScaffold(concept_id) {
+  const pL = STATE.bkt[concept_id];
+  const data = STATE.conceptAttempts[concept_id];
+  // Show scaffold if mastery low or student struggled before
+  return pL < 0.55 || data.wrong > 0;
+}
+
+/* =======================================================
+   REMEDIAL ROUTING
+======================================================= */
+function needsRemedial(subtopic_id) {
+  const m = subtopicMastery(subtopic_id);
+  const st = CHAPTER.subtopics.find(s => s.subtopic_id === subtopic_id);
+  const prereq_idx = CHAPTER.subtopics.indexOf(st) - 1;
+  if (prereq_idx < 0) return false;
+  return m < 0.4; // mastery below 40% triggers remedial
+}
+
+/* =======================================================
+   UI HELPERS
+======================================================= */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateSidebarBars() {
+  const container = document.getElementById('masteryBars');
+  container.innerHTML = CHAPTER.subtopics.map(st => {
+    const concepts = st.concepts;
+    const m = subtopicMastery(st.subtopic_id);
+    // BKT average across concepts
+    const bktAvg = concepts.reduce((sum, c) => sum + (STATE.bkt[c.concept_id] !== undefined ? STATE.bkt[c.concept_id] : (LEVEL_BKT_PRIORS[STATE.studentLevel] || BKT_PARAMS.P_L0)), 0) / Math.max(1, concepts.length);
+    const attempted = concepts.filter(c => (STATE.conceptAttempts[c.concept_id] || {}).attempts > 0).length;
+    const pct    = Math.round(m * 100);
+    const bktPct = Math.round(bktAvg * 100);
+    const col = pct >= 75 ? 'var(--teal)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+    return `<div class="mastery-item">
+      <div class="mastery-row"><span>${st.name}</span><span class="pct" style="color:${col}">${pct}%</span></div>
+      <div class="mastery-bar"><div class="mastery-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div style="font-size:.62rem;color:rgba(255,255,255,.3);margin-top:.15rem">BKT: ${bktPct}% · ${attempted}/${concepts.length} attempted</div>
+    </div>`;
+  }).join('');
+}
+
+function updateSubtopicNav() {
+  const container = document.getElementById('subtopicNav');
+  container.innerHTML = CHAPTER.subtopics.map((st, idx) => {
+    const done     = idx < STATE.currentSubtopicIdx;
+    const active   = idx === STATE.currentSubtopicIdx;
+    const diff     = st.difficulty < 0.4 ? 'easy' : st.difficulty < 0.7 ? 'medium' : 'hard';
+    const cls      = done ? 'done' : active ? 'active' : '';
+    const checkTxt = done ? '(check)' : '';
+    return `<button class="subtopic-btn ${cls}" onclick="jumpSubtopic(${idx})">
+      <span class="subtopic-check">${checkTxt}</span>
+      ${st.name}
+      <span class="diff-dot diff-${diff}"></span>
+    </button>`;
+  }).join('');
+}
+
+function updateSessionStrip() {
+  document.getElementById('statCorrect').textContent = STATE.correctAnswers;
+  document.getElementById('statHints').textContent   = STATE.hintsUsed;
+  const mins = Math.floor(STATE.elapsedSec / 60);
+  document.getElementById('statTime').textContent    = mins + 'm';
+}
+
+function updateProgressBar() {
+  const total = CHAPTER.subtopics.reduce((s, st) => s + st.concepts.length, 0);
+  const completedSubtopicConcepts = CHAPTER.subtopics
+    .slice(0, STATE.currentSubtopicIdx)
+    .reduce((s, st) => s + st.concepts.length, 0);
+  const done = completedSubtopicConcepts +
+    Math.min(STATE.currentConceptIdx, getCurrentSubtopic()?.concepts.length || 0);
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent  = pct + '%';
+}
+
+function getCurrentSubtopic()  { return CHAPTER.subtopics[STATE.currentSubtopicIdx]; }
+function getCurrentConcept()   { const st = getCurrentSubtopic(); return st ? st.concepts[STATE.currentConceptIdx] : null; }
+
+function jumpSubtopic(idx) {
+  if (idx > STATE.currentSubtopicIdx) return; // can only revisit completed
+  STATE.currentSubtopicIdx = idx;
+  STATE.currentConceptIdx  = 0;
+  renderCurrentConcept();
+}
+
+/* =======================================================
+   RENDER -- main teaching + question card
+======================================================= */
+function renderCurrentConcept() {
+  const subtopic = getCurrentSubtopic();
+  const concept  = getCurrentConcept();
+  if (!subtopic || !concept) { endSession(); return; }
+
+  STATE.answeredCurrent  = false;
+  STATE.hintsOpenForCurrent = 0;
+
+  document.getElementById('currentSubtopicLabel').textContent = subtopic.name;
+  updateSubtopicNav();
+  updateSidebarBars();
+  updateProgressBar();
+
+  // Check if remedial needed at subtopic start
+  const isFirstConcept = STATE.currentConceptIdx === 0 && STATE.currentSubtopicIdx > 0;
+  const showRemedial   = isFirstConcept && needsRemedial(CHAPTER.subtopics[STATE.currentSubtopicIdx - 1].subtopic_id);
+
+  const showScaff   = concept.scaffold && shouldShowScaffold(concept.concept_id);
+  const scaffHtml   = showScaff ? buildScaffold(concept) : '';
+  const remedialHtml = showRemedial ? buildRemedialBanner(STATE.currentSubtopicIdx - 1) : '';
+
+  const isNewSubtopic = STATE.currentConceptIdx === 0;
+  const introHtml = isNewSubtopic ? buildIntroCard(subtopic) : '';
+
+  document.getElementById('contentArea').innerHTML = `
+    ${remedialHtml}
+    ${introHtml}
+    <div class="teach-card" id="teachCard">
+      <div class="teach-concept-tag">Concept ${getConceptNumber(concept.concept_id)} of ${getTotalConcepts()}</div>
+      <div class="teach-concept-name">${concept.name}</div>
+      <div class="teach-explanation">${concept.explanation}</div>
+      <div class="example-block"><strong>📌 Example</strong>${concept.example}</div>
+      <div class="question-zone">
+        <div class="question-label">Practice Question</div>
+        <div class="question-text">${concept.question}</div>
+        ${scaffHtml}
+        <div class="answer-row">
+          <input class="answer-input" id="answerInput" type="text" placeholder="Type your answer..." autocomplete="off"
+            onkeydown="if(event.key==='Enter') checkAnswer()">
+          <button class="btn-check" id="checkBtn" onclick="checkAnswer()">Check</button>
+        </div>
+        <div id="feedbackArea"></div>
+        <div class="hint-section">
+          <button class="btn-hint" id="hintBtn" onclick="showHint()">💡 Need a hint?</button>
+          <div id="hintArea"></div>
+        </div>
+        <div class="nav-row">
+          <button class="btn-next" id="nextBtn" onclick="nextConcept()" disabled>
+            Next <span id="nextBtnLabel">-></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('answerInput').focus();
+}
+
+function buildIntroCard(subtopic) {
+  const diffLabel = subtopic.difficulty < 0.4 ? '🟢 Easy' : subtopic.difficulty < 0.7 ? '🟡 Medium' : '🔴 Hard';
+  const conceptCount = subtopic.concepts.length;
+  return `<div class="intro-card">
+    <div class="intro-tag">📚 New Section</div>
+    <div class="intro-title">${subtopic.name}</div>
+    <div class="intro-meta">
+      <span>📝 ${conceptCount} concept${conceptCount > 1 ? 's' : ''}</span>
+      <span>${diffLabel}</span>
+      <span>⏱ ~${Math.round(conceptCount * 3)} min</span>
+    </div>
+  </div>`;
+}
+
+function buildScaffold(concept) {
+  const pL   = STATE.bkt[concept.concept_id];
+  // Fading: high mastery -> show fewer steps (partial fading)
+  const stepsToShow = pL > 0.65 ? Math.ceil(concept.scaffold.length / 2) : concept.scaffold.length;
+  const steps = concept.scaffold.slice(0, stepsToShow);
+  return `<div class="scaffold-wrap">
+    <div class="scaffold-title">🧩 Guided Steps (Scaffolding)</div>
+    <div class="scaffold-steps">
+      ${steps.map((s, i) => `<div class="scaffold-step">
+        <span class="step-num">${i + 1}</span>
+        <span>${s.replace(/__/g, '<span class="step-blank">?</span>')}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function buildRemedialBanner(prevIdx) {
+  const prev = CHAPTER.subtopics[prevIdx];
+  return `<div class="remedial-banner">
+    ⚠️ <strong>Heads up!</strong> Your mastery of <em>${prev.name}</em> is below 40%.
+    Strengthen your foundation with our visual games before continuing.
+    <br><br>
+    <button class="btn-game" onclick="launchRemedial('${prev.name.replace(/'/g,"\\'")}')">
+      🎮 Launch Remedial Games →
+    </button>
+  </div>`;
+}
+
+function getConceptNumber(concept_id) {
+  let n = 0;
+  for (const st of CHAPTER.subtopics) {
+    for (const c of st.concepts) {
+      n++;
+      if (c.concept_id === concept_id) return n;
+    }
+  }
+  return n;
+}
+
+function getTotalConcepts() {
+  return CHAPTER.subtopics.reduce((s, st) => s + st.concepts.length, 0);
+}
+
+/* =======================================================
+   ANSWER CHECKING + BKT UPDATE
+======================================================= */
+function normalizeAnswer(s) {
+  return s.trim().toLowerCase().replace(/\s+/g, '').replace(/×/g, '*');
+}
+
+function checkAnswer() {
+  if (STATE.answeredCurrent) return;
+  const concept  = getCurrentConcept();
+  const input    = document.getElementById('answerInput');
+  const val      = input.value;
+  if (!val.trim()) return;
+
+  const correct  = normalizeAnswer(val) === normalizeAnswer(concept.correctAnswer);
+  const cid      = concept.concept_id;
+
+  // Track attempts
+  const qKey = `${cid}`;
+  const data  = STATE.conceptAttempts[cid];
+  const isFirstAttempt = data.attempts === 0;
+
+  if (!STATE.questionsAttempted.has(qKey)) STATE.questionsAttempted.add(qKey);
+  else STATE.retryCount++;
+
+  data.attempts++;
+  if (correct) { data.correct++; STATE.correctAnswers++; }
+  else         { data.wrong++;   STATE.wrongAnswers++;   }
+
+  // BKT update -- MUST happen before UI update so bars reflect new value
+  STATE.bkt[cid] = bktUpdate(STATE.bkt[cid], correct);
+
+  // UI feedback
+  input.classList.add(correct ? 'correct' : 'wrong');
+  document.getElementById('checkBtn').disabled = true;
+
+  const fb = document.getElementById('feedbackArea');
+  if (correct) {
+    fb.innerHTML = `<div class="feedback-block correct">
+      <strong>✅ Correct!</strong> Well done. 
+      ${STATE.conceptAttempts[cid].wrong > 0 ? `You got it after ${data.attempts} attempt${data.attempts > 1 ? 's' : ''}.` : 'First try!'}
+      Mastery updated to ${Math.round(STATE.bkt[cid] * 100)}%.
+    </div>`;
+    STATE.answeredCurrent = true;
+    document.getElementById('nextBtn').disabled = false;
+    updateNextBtnLabel();
+    updateSidebarBars();   // ← update on correct
+    updateSessionStrip();
+  } else {
+    const tier = getHintTier(cid);
+    fb.innerHTML = `<div class="feedback-block wrong">
+      <strong>❌ Not quite.</strong> Try again — or use the hint below.
+      ${data.wrong >= 2 ? ' Consider using a stronger hint this time.' : ''}
+      BKT mastery now: ${Math.round(STATE.bkt[cid] * 100)}%.
+    </div>`;
+    updateSidebarBars();   // ← FIXED: update on wrong answers too
+    updateSessionStrip();
+    // Re-enable input and check button so student can retry
+    input.classList.remove('wrong');
+    input.value = '';
+    input.focus();
+    document.getElementById('checkBtn').disabled = false;
+    // Auto-show hint if struggling (2+ wrong)
+    if (data.wrong >= 2) {
+      setTimeout(showHint, 400);
+    }
+    // Trigger remedial after 3+ wrong on same concept
+    if (data.wrong >= 3 && !STATE.remedialActive) {
+      STATE.remedialActive = true;
+      const subtopic = getCurrentSubtopic();
+      setTimeout(() => launchRemedial(subtopic ? subtopic.name : 'this topic'), 1200);
+    }
+  }
+}
+
+/* =======================================================
+   HINT SYSTEM
+======================================================= */
+function showHint() {
+  const concept = getCurrentConcept();
+  if (!concept) return;
+
+  STATE.hintsUsed++;
+  STATE.hintsOpenForCurrent++;
+  const curConcept = getCurrentConcept();
+  if (curConcept && STATE.hintsByConceptId) {
+    STATE.hintsByConceptId[curConcept.concept_id] = (STATE.hintsByConceptId[curConcept.concept_id] || 0) + 1;
+  }
+  updateSessionStrip();
+
+  const tier = Math.min(STATE.hintsOpenForCurrent, 3);
+  const hint = getHintText(concept, tier);
+
+  const hintArea = document.getElementById('hintArea');
+  hintArea.innerHTML = `<div class="hint-box">
+    <div class="hint-tier">${hint.label} (Level ${tier})</div>
+    ${hint.text}
+  </div>`;
+
+  if (tier >= 3) {
+    document.getElementById('hintBtn').textContent = '🔓 Full explanation shown';
+    document.getElementById('hintBtn').disabled = true;
+  } else {
+    document.getElementById('hintBtn').textContent = `💡 Show stronger hint (Level ${tier + 1})`;
+  }
+}
+
+/* =======================================================
+   NAVIGATION
+======================================================= */
+function updateNextBtnLabel() {
+  const st = getCurrentSubtopic();
+  const isLast = STATE.currentConceptIdx === st.concepts.length - 1;
+  const isLastSubtopic = STATE.currentSubtopicIdx === CHAPTER.subtopics.length - 1;
+  let label = '->';
+  if (isLast && isLastSubtopic) label = 'Finish Chapter';
+  else if (isLast) label = 'Next Section ->';
+  document.getElementById('nextBtnLabel').textContent = label;
+}
+
+function nextConcept() {
+  const subtopic = getCurrentSubtopic();
+  STATE.currentConceptIdx++;
+
+  // Update subtopic completion
+  const pct = STATE.currentConceptIdx / subtopic.concepts.length;
+  STATE.subtopicProgress[subtopic.subtopic_id] = Math.min(pct, 1);
+
+  if (STATE.currentConceptIdx >= subtopic.concepts.length) {
+    // Subtopic done -- check mastery for badge
+    const m = subtopicMastery(subtopic.subtopic_id);
+    STATE.subtopicProgress[subtopic.subtopic_id] = 1;
+
+    STATE.currentSubtopicIdx++;
+    STATE.currentConceptIdx = 0;
+
+    if (STATE.currentSubtopicIdx >= CHAPTER.subtopics.length) {
+      // Show mastery pop, then end
+      showMasteryPop(subtopic.name, m, true);
+      return;
+    }
+    showMasteryPop(subtopic.name, m, false);
+    return;
+  }
+
+  renderCurrentConcept();
+}
+
+function showMasteryPop(name, mastery, isEnd) {
+  const pct  = Math.round(mastery * 100);
+  const icon = pct >= 80 ? '🏆' : pct >= 60 ? '⭐' : '📈';
+  const msg  = pct >= 80 ? 'Excellent mastery!' : pct >= 60 ? 'Good progress!' : 'Keep practicing!';
+
+  document.getElementById('popIcon').textContent  = icon;
+  document.getElementById('popTitle').textContent = `"${name}" Done`;
+  document.getElementById('popScore').textContent  = pct + '%';
+  document.getElementById('popSub').textContent   = msg;
+
+  const btn = document.querySelector('.mastery-badge-pop .btn-primary');
+  btn.textContent = isEnd ? 'View Report ->' : 'Continue ->';
+  btn.onclick = () => { closePop(); if (isEnd) endSession(); else renderCurrentConcept(); };
+
+  document.getElementById('overlay').classList.add('show');
+  setTimeout(() => document.getElementById('masteryPop').classList.add('show'), 50);
+}
+
+function closePop() {
+  document.getElementById('masteryPop').classList.remove('show');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function confirmExit() {
+  if (confirm('Exit session? Your progress will be saved and a partial session payload will be generated.')) {
+    STATE.sessionStatus = 'exited_midway';
+    endSession();
+  }
+}
+
+/* =======================================================
+   PRE-ASSESSMENT SYSTEM
+   4 levels: novice, beginner, intermediate, advanced
+   Diagnostic questions adapt to self-reported level
+======================================================= */
+const ASSESS_QUESTIONS = {
+  novice: [
+    { q: "If x + 3 = 7, what is x?", opts:["2","3","4","5"], ans:"4" },
+    { q: "Which of these is a linear equation?", opts:["x² = 4","2x + 1 = 7","x³ = 8","√x = 2"], ans:"2x + 1 = 7" },
+    { q: "What does 'solving an equation' mean?", opts:["Finding a pattern","Finding the value of the unknown","Drawing a graph","Counting terms"], ans:"Finding the value of the unknown" }
+  ],
+  beginner: [
+    { q: "Solve: 2x = 10. What is x?", opts:["2","5","10","20"], ans:"5" },
+    { q: "Solve: x – 4 = 9. What is x?", opts:["5","13","4","9"], ans:"13" },
+    { q: "If 3x + 2 = 11, what is x?", opts:["3","4","9","2"], ans:"3" },
+    { q: "What operation undoes multiplication?", opts:["Addition","Subtraction","Division","Squaring"], ans:"Division" }
+  ],
+  intermediate: [
+    { q: "Solve: 2x + 5 = 15. What is x?", opts:["5","10","7","4"], ans:"5" },
+    { q: "Solve: 4(x – 2) = 12. What is x?", opts:["5","4","3","7"], ans:"5" },
+    { q: "Solve: 3x = x + 8. What is x?", opts:["2","4","8","3"], ans:"4" },
+    { q: "A number doubled then reduced by 3 equals 11. What is the number?", opts:["4","7","8","5"], ans:"7" },
+    { q: "Solve: x/3 + 2 = 5. What is x?", opts:["6","9","3","12"], ans:"9" }
+  ],
+  advanced: [
+    { q: "Solve: 5x + 2 = 3x + 10. What is x?", opts:["3","4","5","6"], ans:"4" },
+    { q: "Solve: 2(x + 3) = 3(x – 1). What is x?", opts:["6","9","3","12"], ans:"9" },
+    { q: "If 2/x = 4/6, what is x?", opts:["2","3","4","6"], ans:"3" },
+    { q: "A father is 4 times as old as his son. In 6 years he'll be twice as old. What is the son's current age?", opts:["6","8","9","12"], ans:"6" },
+    { q: "Solve: 3(2x – 1) – 2(x + 4) = 1. What is x?", opts:["2","3","4","5"], ans:"3" }
+  ]
+};
+
+// Initial BKT P(L0) based on assessed level
+const LEVEL_BKT_PRIORS = {
+  novice:       0.10,
+  beginner:     0.25,
+  intermediate: 0.45,
+  advanced:     0.65
+};
+
+const LEVEL_LABELS = {
+  novice:       { icon:'🌱', name:'Foundation Learner', desc:'We\'ll start from the very basics and build up step by step with lots of support.' },
+  beginner:     { icon:'📖', name:'Beginner',           desc:'You know the basics. We\'ll solidify your understanding with clear explanations.' },
+  intermediate: { icon:'🔧', name:'Developing Learner', desc:'Good foundation! We\'ll skip introductory content and focus on strengthening your skills.' },
+  advanced:     { icon:'🚀', name:'Advanced Learner',   desc:'Strong foundation detected. We\'ll jump into challenging problems with minimal scaffolding.' }
+};
+
+let ASSESS_STATE = {
+  selectedLevel: null,
+  questions: [],
+  answers: [],
+  score: 0,
+  finalLevel: null
+};
+
+function goToAssessment() {
+  const name = document.getElementById('studentName').value.trim();
+  const id   = document.getElementById('studentId').value.trim();
+  if (!name || !id) { alert('Please enter your name and student ID.'); return; }
+  showScreen('screen-assessment');
+}
+
+function selectLevel(level, el) {
+  ASSESS_STATE.selectedLevel = level;
+  document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('toStep2Btn').disabled = false;
+}
+
+function goToAssessStep2() {
+  if (!ASSESS_STATE.selectedLevel) return;
+  document.getElementById('assessStep1').classList.add('hidden');
+  document.getElementById('assessStep2').classList.remove('hidden');
+
+  const qs = ASSESS_QUESTIONS[ASSESS_STATE.selectedLevel];
+  ASSESS_STATE.questions = qs;
+  ASSESS_STATE.answers   = new Array(qs.length).fill(null);
+
+  const container = document.getElementById('assessQContainer');
+  container.innerHTML = qs.map((q, i) => `
+    <div class="assess-q-card" id="assessQ${i}">
+      <div class="assess-q-num">Question ${i+1} of ${qs.length}</div>
+      <div class="assess-q-text">${q.q}</div>
+      <div class="assess-options">
+        ${q.opts.map((opt, j) => `
+          <button class="assess-opt" id="qopt_${i}_${j}" onclick="selectAssessOpt(${i},${j},'${opt.replace(/'/g,"\\'")}')">
+            ${opt}
+          </button>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function selectAssessOpt(qi, oi, val) {
+  ASSESS_STATE.answers[qi] = val;
+  // update UI: deselect all in row, select this
+  const q = ASSESS_STATE.questions[qi];
+  q.opts.forEach((_, j) => {
+    const btn = document.getElementById(`qopt_${qi}_${j}`);
+    btn.classList.remove('selected-opt');
+  });
+  document.getElementById(`qopt_${qi}_${oi}`).classList.add('selected-opt');
+  // enable submit if all answered
+  const allAnswered = ASSESS_STATE.answers.every(a => a !== null);
+  document.getElementById('submitAssessBtn').disabled = !allAnswered;
+}
+
+function submitAssessment() {
+  const qs = ASSESS_STATE.questions;
+  let correct = 0;
+  qs.forEach((q, i) => {
+    const answered = ASSESS_STATE.answers[i];
+    const isCorrect = answered === q.ans;
+    if (isCorrect) correct++;
+    // Mark options correct/wrong
+    q.opts.forEach((opt, j) => {
+      const btn = document.getElementById(`qopt_${i}_${j}`);
+      if (!btn) return;
+      if (opt === q.ans) btn.classList.add('correct-opt');
+      else if (opt === answered && !isCorrect) btn.classList.add('wrong-opt');
+      btn.disabled = true;
+    });
+  });
+
+  ASSESS_STATE.score = correct;
+  const ratio = correct / qs.length;
+
+  // Determine final level
+  const selfLevel = ASSESS_STATE.selectedLevel;
+  let finalLevel = selfLevel;
+
+  if (selfLevel === 'novice') {
+    finalLevel = ratio >= 0.67 ? 'beginner' : 'novice';
+  } else if (selfLevel === 'beginner') {
+    finalLevel = ratio >= 0.75 ? 'intermediate' : (ratio < 0.25 ? 'novice' : 'beginner');
+  } else if (selfLevel === 'intermediate') {
+    finalLevel = ratio >= 0.8 ? 'advanced' : (ratio < 0.4 ? 'beginner' : 'intermediate');
+  } else {
+    finalLevel = ratio >= 0.6 ? 'advanced' : 'intermediate';
+  }
+
+  ASSESS_STATE.finalLevel = finalLevel;
+  const info = LEVEL_LABELS[finalLevel];
+
+  document.getElementById('assessStep2').classList.add('hidden');
+  document.getElementById('assessResult').classList.remove('hidden');
+  document.getElementById('assessResultBar').innerHTML = `
+    <div style="font-size:3rem;margin-bottom:.5rem">${info.icon}</div>
+    <div class="assess-result-level">${info.name}</div>
+    <div style="font-family:'DM Mono',monospace;font-size:1.2rem;color:var(--gold-lt);margin:.5rem 0">${correct}/${qs.length} correct</div>
+    <div class="assess-result-desc">${info.desc}</div>
+    <div style="margin-top:.75rem;font-size:.78rem;color:rgba(255,255,255,.45)">Initial mastery set to ${Math.round(LEVEL_BKT_PRIORS[finalLevel]*100)}% · All content adapts to your level</div>
+  `;
+}
+
+function startSessionFromAssessment() {
+  const name = document.getElementById('studentName').value.trim();
+  const id   = document.getElementById('studentId').value.trim();
+  const level = ASSESS_STATE.finalLevel || ASSESS_STATE.selectedLevel || 'beginner';
+
+  STATE.studentName  = name;
+  STATE.studentId    = id;
+  STATE.sessionId    = 'sess_' + Math.random().toString(36).slice(2,8).toUpperCase();
+  STATE.startTime    = new Date();
+  STATE.studentLevel = level;
+
+  initBKT(level);
+
+  document.getElementById('sidebarName').textContent = name;
+  // Show level badge in sidebar
+  const info = LEVEL_LABELS[level];
+  document.getElementById('student-level-badge').textContent = info.icon + ' ' + info.name;
+  showScreen('screen-tutor');
+
+  STATE.timerInterval = setInterval(() => {
+    STATE.elapsedSec++;
+    updateSessionStrip();
+  }, 1000);
+
+  renderCurrentConcept();
+}
+
+/* =======================================================
+   REMEDIAL GAME SYSTEM
+======================================================= */
+let REMEDIAL = {
+  gameState: 'balance',
+  totalCorrect: 0,
+  currentGame: null,
+  // balance game
+  bal: { answer: 0, round: 1, score: 0, streak: 0 },
+  // number line game
+  nl:  { answer: 0, markerPos: 0, min: -5, max: 20, round: 1, score: 0, streak: 0 },
+  // drag game
+  dg:  { steps: [], answer: [], round: 1, score: 0, streak: 0 }
+};
+
+function launchRemedial(subtopicName) {
+  REMEDIAL.totalCorrect = 0;
+  REMEDIAL.bal = { answer:0, round:1, score:0, streak:0 };
+  REMEDIAL.nl  = { answer:0, markerPos:5, min:0, max:20, round:1, score:0, streak:0 };
+  REMEDIAL.dg  = { steps:[], answer:[], round:1, score:0, streak:0 };
+
+  document.getElementById('remedialSubText').textContent =
+    `You've been struggling with concepts in "${subtopicName}". Play these visual games to build intuition before continuing.`;
+  document.getElementById('remedialDoneBtn').disabled = true;
+  document.getElementById('remedialScoreMsg').textContent = 'Complete at least 3 correct answers to unlock this button.';
+
+  showScreen('screen-remedial');
+  switchGame('balance', document.querySelector('.game-tab'));
+}
+
+function switchGame(name, tabEl) {
+  document.querySelectorAll('.game-container').forEach(g => g.classList.add('hidden'));
+  document.querySelectorAll('.game-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('game-' + name).classList.remove('hidden');
+  if (tabEl) tabEl.classList.add('active');
+  REMEDIAL.gameState = name;
+
+  if (name === 'balance')    initBalanceGame();
+  if (name === 'numberline') initNLGame();
+  if (name === 'drag')       initDragGame();
+}
+
+function remedialCorrect() {
+  REMEDIAL.totalCorrect++;
+  if (REMEDIAL.totalCorrect >= 3) {
+    document.getElementById('remedialDoneBtn').disabled = false;
+    document.getElementById('remedialScoreMsg').textContent = `🎉 Great work! You've answered ${REMEDIAL.totalCorrect} correctly. You're ready!`;
+  } else {
+    document.getElementById('remedialScoreMsg').textContent =
+      `${REMEDIAL.totalCorrect}/3 correct — keep going!`;
+  }
+}
+
+// ── BALANCE SCALE GAME ─────────────────────────────────
+function initBalanceGame() {
+  const r = REMEDIAL.bal.round;
+  // Generate puzzle based on round difficulty
+  const a = r <= 2 ? (Math.floor(Math.random()*5)+1) : (Math.floor(Math.random()*8)+2);
+  const b = Math.floor(Math.random()*10)+1;
+  const c = a * (Math.floor(Math.random()*8)+1) + b; // ax + b = c
+  REMEDIAL.bal.a = a; REMEDIAL.bal.b = b; REMEDIAL.bal.c = c;
+  REMEDIAL.bal.answer = (c - b) / a;
+
+  document.getElementById('balEquation').textContent = `${a}x + ${b} = ${c}   →   x = ?`;
+  document.getElementById('balInput').value = '';
+  document.getElementById('balFeedback').textContent = '';
+  document.getElementById('balFeedback').className = 'game-feedback';
+  document.getElementById('balRound').textContent = r;
+  document.getElementById('balScore').textContent = REMEDIAL.bal.score;
+  document.getElementById('balStreak').textContent = REMEDIAL.bal.streak > 1 ? `🔥 Streak x${REMEDIAL.bal.streak}` : '';
+  drawBalance(0);
+}
+
+function drawBalance(tiltAngle) {
+  const canvas = document.getElementById('balanceCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  ctx.fillStyle = '#faf8f3';
+  ctx.fillRect(0, 0, W, H);
+
+  const cx = W / 2, cy = H / 2;
+
+  // Stand
+  ctx.fillStyle = '#8B6914';
+  ctx.fillRect(cx - 8, cy + 20, 16, 80);
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + 100, 50, 12, 0, 0, Math.PI * 2);
+  ctx.fillStyle = '#6B4F0A';
+  ctx.fill();
+
+  // Pivot
+  ctx.beginPath();
+  ctx.arc(cx, cy + 20, 10, 0, Math.PI * 2);
+  ctx.fillStyle = '#c8902a';
+  ctx.fill();
+
+  // Beam (rotates by tilt)
+  const tilt = tiltAngle * 0.3;
+  ctx.save();
+  ctx.translate(cx, cy + 20);
+  ctx.rotate(tilt);
+  ctx.fillStyle = '#8B6914';
+  ctx.fillRect(-140, -6, 280, 12);
+
+  // Left pan string
+  ctx.strokeStyle = '#6B4F0A';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-100, 0); ctx.lineTo(-100, 35);
+  ctx.stroke();
+
+  // Right pan string
+  ctx.beginPath();
+  ctx.moveTo(100, 0); ctx.lineTo(100, 35);
+  ctx.stroke();
+
+  // Left pan
+  ctx.fillStyle = '#c8902a';
+  ctx.fillRect(-130, 35, 60, 10);
+  ctx.beginPath();
+  ctx.ellipse(-100, 35, 30, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Right pan
+  ctx.fillStyle = '#c8902a';
+  ctx.fillRect(70, 35, 60, 10);
+  ctx.beginPath();
+  ctx.ellipse(100, 35, 30, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  const { a, b, c } = REMEDIAL.bal;
+  const leftLabel  = (a > 1 ? a + 'x' : 'x') + (b > 0 ? ' + ' + b : '');
+  const rightLabel = '' + c;
+
+  // Left pan label
+  ctx.fillStyle = '#1a7a6e';
+  ctx.font = 'bold 16px DM Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(leftLabel, -100, 28);
+
+  // Right pan label
+  ctx.fillStyle = '#c0392b';
+  ctx.fillText(rightLabel, 100, 28);
+
+  ctx.restore();
+
+  // Balance instructions
+  ctx.fillStyle = '#7a746a';
+  ctx.font = '13px Outfit, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Make both sides equal — find x!', cx, H - 10);
+}
+
+function checkBalanceAnswer() {
+  const val = parseFloat(document.getElementById('balInput').value);
+  if (isNaN(val)) return;
+  const correct = Math.abs(val - REMEDIAL.bal.answer) < 0.01;
+
+  const fb = document.getElementById('balFeedback');
+  if (correct) {
+    fb.textContent = `✅ Correct! x = ${REMEDIAL.bal.answer}. The scale is perfectly balanced!`;
+    fb.className = 'game-feedback ok';
+    REMEDIAL.bal.score++;
+    REMEDIAL.bal.streak++;
+    remedialCorrect();
+    drawBalance(0);
+    setTimeout(() => {
+      if (REMEDIAL.bal.round < 5) { REMEDIAL.bal.round++; initBalanceGame(); }
+      else { fb.textContent = `🎉 Balance Master! You completed all 5 rounds with ${REMEDIAL.bal.score} correct!`; }
+    }, 1500);
+  } else {
+    fb.textContent = `❌ Not quite. Try again! Hint: ${REMEDIAL.bal.a}x + ${REMEDIAL.bal.b} = ${REMEDIAL.bal.c} — what should x be?`;
+    fb.className = 'game-feedback bad';
+    REMEDIAL.bal.streak = 0;
+    drawBalance(1.5); // tilt to show imbalance
+    setTimeout(() => drawBalance(0), 800);
+  }
+  document.getElementById('balScore').textContent = REMEDIAL.bal.score;
+  document.getElementById('balStreak').textContent = REMEDIAL.bal.streak > 1 ? `🔥 x${REMEDIAL.bal.streak}` : '';
+}
+
+// ── NUMBER LINE GAME ───────────────────────────────────
+function initNLGame() {
+  const r = REMEDIAL.nl.round;
+  const max = r <= 2 ? 10 : 20;
+  const ans = Math.floor(Math.random() * (max - 1)) + 1;
+  const b   = Math.floor(Math.random() * 5) + 1;
+  const rhs = ans + b;
+  REMEDIAL.nl.answer  = ans;
+  REMEDIAL.nl.b       = b;
+  REMEDIAL.nl.rhs     = rhs;
+  REMEDIAL.nl.min     = 0;
+  REMEDIAL.nl.max     = max + 2;
+  REMEDIAL.nl.markerPos = Math.floor(max / 2);
+
+  document.getElementById('nlQuestion').textContent = `Solve: x + ${b} = ${rhs}   →   Where does x land on the number line?`;
+  document.getElementById('nlRound').textContent = r;
+  document.getElementById('nlScore').textContent = REMEDIAL.nl.score;
+  document.getElementById('nlStreak').textContent = REMEDIAL.nl.streak > 1 ? `🔥 x${REMEDIAL.nl.streak}` : '';
+  document.getElementById('nlFeedback').textContent = '';
+  document.getElementById('nlFeedback').className = 'game-feedback';
+  renderNL();
+
+  // Setup drag for marker
+  const marker = document.getElementById('nlMarker');
+  let dragging = false;
+  marker.onmousedown = (e) => { dragging = true; e.preventDefault(); };
+  document.onmousemove = (e) => {
+    if (!dragging) return;
+    const wrap = document.getElementById('nlWrap');
+    const rect = wrap.getBoundingClientRect();
+    const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    REMEDIAL.nl.markerPos = Math.round(REMEDIAL.nl.min + pct * (REMEDIAL.nl.max - REMEDIAL.nl.min));
+    renderNL();
+  };
+  document.onmouseup = () => { dragging = false; };
+}
+
+function renderNL() {
+  const { min, max, markerPos } = REMEDIAL.nl;
+  const pct = (markerPos - min) / (max - min) * 100;
+  document.getElementById('nlMarker').style.left = pct + '%';
+
+  // Render tick labels
+  const labels = document.getElementById('nlLabels');
+  const steps  = max - min;
+  const interval = steps <= 12 ? 1 : 5;
+  let html = '';
+  for (let v = min; v <= max; v += interval) {
+    const lPct = (v - min) / steps * 100;
+    html += `<span style="position:absolute;left:${lPct}%;transform:translateX(-50%)">${v}</span>`;
+  }
+  labels.style.position = 'relative';
+  labels.style.height = '20px';
+  labels.innerHTML = html;
+
+  // Show current position indicator
+  document.getElementById('nlQuestion').textContent =
+    `Solve: x + ${REMEDIAL.nl.b} = ${REMEDIAL.nl.rhs}   →   Current position: x = ${markerPos}`;
+}
+
+function nlMove(delta) {
+  const { min, max } = REMEDIAL.nl;
+  REMEDIAL.nl.markerPos = Math.max(min, Math.min(max, REMEDIAL.nl.markerPos + delta));
+  renderNL();
+}
+
+function submitNLAnswer() {
+  const correct = REMEDIAL.nl.markerPos === REMEDIAL.nl.answer;
+  const fb = document.getElementById('nlFeedback');
+  if (correct) {
+    fb.textContent = `✅ Perfect! x = ${REMEDIAL.nl.answer} is exactly right on the number line!`;
+    fb.className = 'game-feedback ok';
+    REMEDIAL.nl.score++; REMEDIAL.nl.streak++;
+    remedialCorrect();
+    setTimeout(() => {
+      if (REMEDIAL.nl.round < 5) { REMEDIAL.nl.round++; initNLGame(); }
+      else { fb.textContent = `🎉 Number Line Pro! Completed all 5 rounds with ${REMEDIAL.nl.score} correct!`; }
+    }, 1500);
+  } else {
+    fb.textContent = `❌ Not quite — you placed ${REMEDIAL.nl.markerPos} but x = ${REMEDIAL.nl.answer}. Try again!`;
+    fb.className = 'game-feedback bad';
+    REMEDIAL.nl.streak = 0;
+  }
+  document.getElementById('nlScore').textContent = REMEDIAL.nl.score;
+  document.getElementById('nlStreak').textContent = REMEDIAL.nl.streak > 1 ? `🔥 x${REMEDIAL.nl.streak}` : '';
+}
+
+// ── DRAG & SOLVE GAME ──────────────────────────────────
+const DRAG_PUZZLES = [
+  { eq:'2x + 3 = 11', steps:['2x + 3 = 11', 'Subtract 3 from both sides', '2x = 8', 'Divide both sides by 2', 'x = 4'] },
+  { eq:'3x - 6 = 9',  steps:['3x - 6 = 9',  'Add 6 to both sides', '3x = 15', 'Divide both sides by 3', 'x = 5'] },
+  { eq:'x/2 + 1 = 5', steps:['x/2 + 1 = 5', 'Subtract 1 from both sides', 'x/2 = 4', 'Multiply both sides by 2', 'x = 8'] },
+  { eq:'5x = 2x + 9', steps:['5x = 2x + 9', 'Subtract 2x from both sides', '3x = 9', 'Divide both sides by 3', 'x = 3'] },
+  { eq:'4(x-1) = 12', steps:['4(x-1) = 12', 'Divide both sides by 4', 'x - 1 = 3', 'Add 1 to both sides', 'x = 4'] }
+];
+
+let dgDragEl = null;
+
+function initDragGame() {
+  const idx = (REMEDIAL.dg.round - 1) % DRAG_PUZZLES.length;
+  const puzzle = DRAG_PUZZLES[idx];
+  REMEDIAL.dg.correctOrder = puzzle.steps;
+
+  document.getElementById('dgEquationDisplay').textContent = 'Equation: ' + puzzle.eq;
+  document.getElementById('dgRound').textContent = REMEDIAL.dg.round;
+  document.getElementById('dgScore').textContent = REMEDIAL.dg.score;
+  document.getElementById('dgStreak').textContent = REMEDIAL.dg.streak > 1 ? `🔥 x${REMEDIAL.dg.streak}` : '';
+  document.getElementById('dgFeedback').textContent = '';
+  document.getElementById('dgFeedback').className = 'game-feedback';
+
+  // Shuffle steps for source
+  const shuffled = [...puzzle.steps].sort(() => Math.random() - 0.5);
+  const src = document.getElementById('dgSource');
+  const tgt = document.getElementById('dgTarget');
+  src.innerHTML = '';
+  tgt.innerHTML = '';
+
+  shuffled.forEach((step, i) => {
+    const el = document.createElement('div');
+    el.textContent = step;
+    el.dataset.step = step;
+    el.style.cssText = 'background:#fff;border:1.5px solid var(--border);border-radius:6px;padding:.5rem .75rem;font-size:.82rem;font-family:"DM Mono",monospace;cursor:grab;user-select:none;';
+    el.draggable = true;
+    el.addEventListener('dragstart', e => { dgDragEl = el; e.dataTransfer.effectAllowed = 'move'; });
+    src.appendChild(el);
+  });
+
+  [src, tgt].forEach(zone => {
+    zone.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dgDragEl) { zone.appendChild(dgDragEl); dgDragEl = null; }
+    });
+  });
+}
+
+function checkDragAnswer() {
+  const tgt = document.getElementById('dgTarget');
+  const items = [...tgt.children].map(c => c.dataset.step);
+  const correct = REMEDIAL.dg.correctOrder;
+  const isCorrect = items.length === correct.length && items.every((s,i) => s === correct[i]);
+
+  const fb = document.getElementById('dgFeedback');
+  if (isCorrect) {
+    fb.textContent = '✅ Perfect order! You solved it step by step correctly!';
+    fb.className = 'game-feedback ok';
+    REMEDIAL.dg.score++; REMEDIAL.dg.streak++;
+    remedialCorrect();
+    setTimeout(() => {
+      if (REMEDIAL.dg.round < 5) { REMEDIAL.dg.round++; initDragGame(); }
+      else { fb.textContent = `🎉 Step Master! Completed all 5 puzzles with ${REMEDIAL.dg.score} correct!`; }
+    }, 1500);
+  } else {
+    fb.textContent = `❌ Not quite right. Check the order — start with the original equation first, then isolate x step by step.`;
+    fb.className = 'game-feedback bad';
+    REMEDIAL.dg.streak = 0;
+  }
+  document.getElementById('dgScore').textContent = REMEDIAL.dg.score;
+  document.getElementById('dgStreak').textContent = REMEDIAL.dg.streak > 1 ? `🔥 x${REMEDIAL.dg.streak}` : '';
+}
+
+function returnFromRemedial() {
+  // Reset per-concept wrong counters for current concept so student gets fresh start
+  const concept = getCurrentConcept();
+  if (concept) {
+    STATE.conceptAttempts[concept.concept_id].wrong = 0;
+    STATE.bkt[concept.concept_id] = Math.max(STATE.bkt[concept.concept_id], 0.35); // small boost
+  }
+  STATE.remedialActive = false;
+  showScreen('screen-tutor');
+  renderCurrentConcept();
+}
+
+/* =======================================================
+   BACKEND API INTEGRATION
+======================================================= */
+const API_ENDPOINT = localStorage.getItem('apiEndpoint') || 'http://localhost:5000';
+
+async function saveSessionToDatabase() {
+  // Save session data to backend database
+  const btn = document.querySelector('[data-save-btn]');
+  if (!btn) return;
+  
+  btn.disabled = true;
+  btn.textContent = '📤 Saving to database...';
+  
+  try {
+    const response = await fetch(`${API_ENDPOINT}/api/submit-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(window._payload)
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      btn.textContent = '✅ Saved Successfully!';
+      btn.style.background = 'var(--green)';
+      console.log('✓ Session saved:', result);
+      
+      const msgEl = document.createElement('div');
+      msgEl.innerHTML = `<p style="color: var(--green); margin-top: 1rem;">✅ <strong>Saved!</strong> Session ID: ${result.session_id}</p>`;
+      btn.parentElement.appendChild(msgEl);
+    } else {
+      const error = await response.json();
+      throw new Error(error.error || 'Server error');
+    }
+  } catch (error) {
+    console.error('Save error:', error);
+    btn.textContent = '❌ Save Failed - Check Console';
+    btn.style.background = 'var(--red)';
+    
+    const msgEl = document.createElement('div');
+    msgEl.innerHTML = `<p style="color: var(--red); margin-top: 1rem;">⚠️ Could not save to database: ${error.message}<br/><small>You can still copy the JSON above or retry.</small></p>`;
+    btn.parentElement.appendChild(msgEl);
+  }
+}
+
+/* =======================================================
+   SESSION START (now called from assessment)
+======================================================= */
+function startSession() {
+  // Legacy entry point kept for restartApp()
+  const name = document.getElementById('studentName').value.trim();
+  const id   = document.getElementById('studentId').value.trim();
+  if (!name || !id) { alert('Please enter your name and student ID.'); return; }
+
+  STATE.studentName  = name;
+  STATE.studentId    = id;
+  STATE.sessionId    = 'sess_' + Math.random().toString(36).slice(2,8).toUpperCase();
+  STATE.startTime    = new Date();
+  STATE.studentLevel = ASSESS_STATE.finalLevel || 'beginner';
+
+  initBKT(STATE.studentLevel);
+  document.getElementById('sidebarName').textContent = name;
+  const info = LEVEL_LABELS[STATE.studentLevel] || LEVEL_LABELS.beginner;
+  document.getElementById('student-level-badge').textContent = info.icon + ' ' + info.name;
+
+  showScreen('screen-tutor');
+
+  STATE.timerInterval = setInterval(() => {
+    STATE.elapsedSec++;
+    updateSessionStrip();
+  }, 1000);
+
+  renderCurrentConcept();
+}
+
+function endSession() {
+  clearInterval(STATE.timerInterval);
+
+  // Fill any remaining subtopic progress
+  CHAPTER.subtopics.forEach(st => {
+    if (!STATE.subtopicProgress[st.subtopic_id]) STATE.subtopicProgress[st.subtopic_id] = 0;
+  });
+
+  buildReport();
+  showScreen('screen-report');
+}
+
+/* =======================================================
+   REPORT + PAYLOAD GENERATION
+======================================================= */
+function buildReport() {
+  const totalQ   = getTotalConcepts();
+  const attempted = STATE.questionsAttempted.size;
+  const correct  = STATE.correctAnswers;
+  const wrong    = STATE.wrongAnswers;
+  const accuracy = attempted > 0 ? Math.round((correct / (correct + wrong)) * 100) : 0;
+  const elapsed  = STATE.elapsedSec;
+  const compRatio = parseFloat((
+    CHAPTER.subtopics.reduce((sum, st) => sum + (STATE.subtopicProgress[st.subtopic_id] || 0), 0)
+    / CHAPTER.subtopics.length
+  ).toFixed(2));
+
+  document.getElementById('reportName').textContent = STATE.studentName;
+  document.getElementById('reportSub').textContent =
+    STATE.sessionStatus === 'completed'
+      ? 'You completed the chapter. Here is your full performance summary.'
+      : 'Session exited early. Here is what we captured.';
+
+  // Metrics
+  const mins = Math.floor(elapsed / 60);
+  document.getElementById('metricsGrid').innerHTML = `
+    <div class="metric-card highlight">
+      <div class="m-val">${accuracy}%</div>
+      <div class="m-lbl">Accuracy</div>
+    </div>
+    <div class="metric-card">
+      <div class="m-val">${correct}/${correct+wrong}</div>
+      <div class="m-lbl">Correct / Attempted</div>
+    </div>
+    <div class="metric-card">
+      <div class="m-val">${STATE.hintsUsed}</div>
+      <div class="m-lbl">Hints Used</div>
+    </div>
+    <div class="metric-card">
+      <div class="m-val">${mins}m</div>
+      <div class="m-lbl">Time Spent</div>
+    </div>
+    <div class="metric-card">
+      <div class="m-val">${Math.round(compRatio * 100)}%</div>
+      <div class="m-lbl">Completion</div>
+    </div>
+    <div class="metric-card">
+      <div class="m-val">${STATE.retryCount}</div>
+      <div class="m-lbl">Retries</div>
+    </div>
+  `;
+
+  // Subtopic breakdown
+  document.getElementById('subtopicBreakdown').innerHTML = CHAPTER.subtopics.map(st => {
+    const p = Math.round((STATE.subtopicProgress[st.subtopic_id] || 0) * 100);
+    const m = Math.round(subtopicMastery(st.subtopic_id) * 100);
+    return `<div class="st-row">
+      <span class="st-name">${st.name}</span>
+      <div class="st-bar-wrap"><div class="st-bar-fill" style="width:${p}%"></div></div>
+      <span class="st-pct">${p}%</span>
+    </div>`;
+  }).join('');
+
+  // Build and validate payload
+  const totalHints = CHAPTER.subtopics.reduce((s, st) => s + st.concepts.length * 3, 0);
+  const payload = {
+    student_id: STATE.studentId,
+    session_id: STATE.sessionId,
+    chapter_id: CHAPTER.chapter_id,
+    timestamp: new Date().toISOString(),
+    session_status: STATE.sessionStatus,
+    correct_answers: correct,
+    wrong_answers: wrong,
+    questions_attempted: attempted,
+    total_questions: totalQ,
+    retry_count: STATE.retryCount,
+    hints_used: STATE.hintsUsed,
+    total_hints_embedded: totalHints,
+    time_spent_seconds: elapsed,
+    topic_completion_ratio: compRatio,
+    subtopic_progress: CHAPTER.subtopics.map(st => ({
+      subtopic_id: st.subtopic_id,
+      completion: parseFloat((STATE.subtopicProgress[st.subtopic_id] || 0).toFixed(2)),
+      bkt_mastery: parseFloat(subtopicMastery(st.subtopic_id).toFixed(3))
+    }))
+  };
+
+  // Validation checks
+  const warnings = [];
+  if (correct + wrong > attempted)      warnings.push('correct + wrong > questions_attempted (possible overcounting)');
+  if (STATE.hintsUsed > totalHints)     warnings.push('hints_used exceeds total_hints_embedded');
+  if (compRatio < 0 || compRatio > 1)   warnings.push('topic_completion_ratio out of [0,1] range');
+
+  if (warnings.length) {
+    document.getElementById('validationSection').innerHTML = warnings.map(w =>
+      `<div class="validation-warn">⚠️ Validation: ${w}</div>`
+    ).join('');
+  }
+
+  // Pretty JSON
+  window._payload = payload;
+  document.getElementById('payloadDisplay').innerHTML = syntaxHighlight(JSON.stringify(payload, null, 2));
+}
+
+function syntaxHighlight(json) {
+  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+    let cls = 'num';
+    if (/^"/.test(match)) { cls = /:$/.test(match) ? 'key' : 'str'; }
+    else if (/true|false/.test(match)) { cls = 'bool'; }
+    return `<span class="${cls}">${match}</span>`;
+  });
+}
+
+function copyPayload() {
+  navigator.clipboard.writeText(JSON.stringify(window._payload, null, 2))
+    .then(() => { 
+      document.querySelector('.btn-copy').textContent = '✓ Copied!'; 
+      setTimeout(() => document.querySelector('.btn-copy').textContent = 'Copy JSON', 2000); 
+    })
+    .catch(() => alert('Copy failed -- please select text manually.'));
+}
+
+function setAPIEndpoint() {
+  const endpoint = prompt('Enter API endpoint URL:', API_ENDPOINT || 'https://your-backend.onrender.com');
+  if (endpoint) {
+    localStorage.setItem('apiEndpoint', endpoint);
+    window.location.reload();
+  }
+}
+
+function restartApp() {
+  STATE = {
+    studentName: '', studentId: '', sessionId: '',
+    startTime: null, studentLevel: 'beginner',
+    currentSubtopicIdx: 0, currentConceptIdx: 0,
+    hintsUsed: 0, hintsOpenForCurrent: 0, correctAnswers: 0, wrongAnswers: 0,
+    questionsAttempted: new Set(), retryCount: 0, subtopicProgress: {},
+    bkt: {}, conceptAttempts: {}, hintsByConceptId: {}, answeredCurrent: false,
+    remedialActive: false, timerInterval: null, elapsedSec: 0, sessionStatus: 'completed'
+  };
+  ASSESS_STATE = { selectedLevel: null, questions: [], answers: [], score: 0, finalLevel: null };
+  document.getElementById('studentName').value = '';
+  document.getElementById('studentId').value   = '';
+  // Reset assessment UI
+  document.getElementById('assessStep1').classList.remove('hidden');
+  document.getElementById('assessStep2').classList.add('hidden');
+  document.getElementById('assessResult').classList.add('hidden');
+  document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('toStep2Btn').disabled = true;
+  showScreen('screen-landing');
+}
+</script>
+</body>
+</html>
