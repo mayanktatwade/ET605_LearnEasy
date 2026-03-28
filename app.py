@@ -26,10 +26,6 @@ db = SQLAlchemy(app)
 # Enable CORS for frontend requests
 CORS(app)
 
-# Auto-create tables on startup (works with Gunicorn too)
-with app.app_context():
-    db.create_all()
-
 # ==================== DATABASE MODELS ====================
 class Session(db.Model):
     """Stores each student tutoring session"""
@@ -89,7 +85,11 @@ class Session(db.Model):
 @app.route('/')
 def index():
     """Serve the main tutoring application UI"""
-    return send_file('ET605_Linear_Equations_BACKEND_READY.html', mimetype='text/html')
+    html_file = os.path.join(basedir, 'ET605_Linear_Equations_BACKEND_READY.html')
+    if not os.path.exists(html_file):
+        files = os.listdir(basedir)
+        return jsonify({'error': 'HTML file not found', 'looking_for': html_file, 'files_available': files}), 404
+    return send_file(html_file, mimetype='text/html')
 
 @app.route('/health', methods=['GET'])
 def health():
