@@ -82,6 +82,11 @@ class Session(db.Model):
 
 # ==================== ROUTES ====================
 
+@app.route('/')
+def index():
+    """Serve the main tutoring application UI"""
+    return send_file('ET605_Linear_Equations_BACKEND_READY.html', mimetype='text/html')
+
 @app.route('/health', methods=['GET'])
 def health():
     """Health check endpoint"""

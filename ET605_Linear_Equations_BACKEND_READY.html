@@ -3171,6 +3171,8 @@ function syntaxHighlight(json) {
   });
 }
 
+const API_ENDPOINT = localStorage.getItem('apiEndpoint') || '';
+
 function copyPayload() {
   navigator.clipboard.writeText(JSON.stringify(window._payload, null, 2))
     .then(() => { 
@@ -3178,6 +3180,38 @@ function copyPayload() {
       setTimeout(() => document.querySelector('.btn-copy').textContent = 'Copy JSON', 2000); 
     })
     .catch(() => alert('Copy failed -- please select text manually.'));
+}
+
+async function saveSessionToDatabase() {
+  const btn = document.querySelector('[data-save-btn]');
+  if (!btn) return;
+  
+  btn.disabled = true;
+  btn.textContent = '📤 Saving...';
+  
+  try {
+    const url = API_ENDPOINT ? `${API_ENDPOINT}/api/submit-session` : '/api/submit-session';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(window._payload)
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      btn.textContent = '✅ Saved to Database!';
+      console.log('Session saved:', result);
+      alert(`✅ Session successfully saved to Database! Session ID: ${result.session_id}`);
+    } else {
+      throw new Error('Failed to save session');
+    }
+  } catch (error) {
+    console.error('Save error:', error);
+    btn.textContent = '❌ Save Failed';
+    alert(`⚠️ Could not save to database: ${error.message}\n\nYou can still see your JSON payload below.`);
+  }
 }
 
 function setAPIEndpoint() {
